@@ -43,6 +43,7 @@ import {
   MDBCardText,
   MDBBtn,
   MDBInput, 
+  MDBInputGroup,
   MDBRow, 
   MDBCol,
   MDBSwitch,
@@ -66,7 +67,11 @@ import { Placeholder } from 'react-bootstrap';
 export default function Dashboard() {
   const iconBoxInside = useColorModeValue("white", "white");
   const [centredModal, setCentredModal] = useState(false);
+  const [centredModal2, setCentredModal2] = useState(false);
+
   const toggleShow = () => setCentredModal(!centredModal);
+  const toggleShow2 = () => setCentredModal2(!centredModal2);
+
 
 
   return (
@@ -98,71 +103,6 @@ export default function Dashboard() {
           icon={<CartIcon h={"24px"} w={"24px"} color={iconBoxInside} />}
         />
       </SimpleGrid>
-
-
-
-{/* ------------------Add sale and buying details here---------------------*/}
-
-
-      <Grid
-        templateColumns={{ md: "1fr" }}
-        templateRows={{ md: "1fr auto", lg: "1fr" }}
-        my='26px'
-        gap='24px'>
-<>
-
-<MDBCard>
-      <MDBCardHeader>ADD and Sell Currency</MDBCardHeader>
-      <MDBCardBody>
-        <MDBCardTitle>Select currency and add amount</MDBCardTitle>
-        <MDBCardText>Use Buttons to Buy or Sell Currency.</MDBCardText><br></br>
-        
-        <MDBRow className='g-3'>
-
-<MDBCol size='sm'>
-<Form.Select aria-label="Default select example">
-      <option>select Currency</option>
-      <option value="USD">USD</option>
-      <option value="PKR">PKR</option>
-      <option value="AUD">AUD</option>
-    </Form.Select>
-</MDBCol>
-
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Currency Rate' /><br></br>
-      </MDBCol>
-
-      <MDBCol size='sm'>
-         <MDBInput id='form12Example1' label='Amount' />
-      </MDBCol>
-
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Amount in PKR' /><br></br>
-      </MDBCol>
-
-      <MDBCol size='sm'>
-      <MDBCheckbox name='inlineCheck' id='inlineCheckbox1' value='option1' label='Cash' inline />
-      <MDBCheckbox name='inlineCheck' id='inlineCheckbox2' value='option2' label='Pending' inline /><br></br>
-      </MDBCol>
-
-    </MDBRow>
-    <div className='me-1 d-grid gap-5 col-2'>
-<MDBInput  id='form12Example2' label='Add Pending Amount' /><br></br>
-    </div>
-
-    <div className='d-flex align-items-center justify-content-center  ' >
-    <MDBBtn className='me-1 d-grid gap-5 col-2' color='success'size='lg'>
-        Buy
-      </MDBBtn>
-      <MDBBtn className='me-1 d-grid gap-5 col-2' color='danger' size='lg'>
-        Sell
-      </MDBBtn>
-    </div>
-      </MDBCardBody>
-    </MDBCard>
-</>
-      </Grid>
-
 
 
 
@@ -221,21 +161,21 @@ export default function Dashboard() {
 
     <div className='d-flex align-items-center justify-content-center  ' >
 
-    <MDBBtn className='me-1 d-grid gap-5 col-2' size= 'lg' onClick={toggleShow}>Add new Person</MDBBtn>
+    <MDBBtn className='me-1 d-grid gap-5 col-2' size= 'lg' onClick={toggleShow2}>Add new Person</MDBBtn>
 
-<MDBModal tabIndex='-1' show={centredModal} setShow={setCentredModal}>
+<MDBModal tabIndex='-1' show={centredModal2} setShow={setCentredModal2}>
   <MDBModalDialog centered>
     <MDBModalContent>
       <MDBModalHeader>
         <MDBModalTitle></MDBModalTitle>
-        <MDBBtn className=' btn-close'  color='none' onClick={toggleShow}></MDBBtn>
+        <MDBBtn className=' btn-close'  color='none' onClick={toggleShow2}></MDBBtn>
       </MDBModalHeader>
       <MDBModalBody>
         <h5>Add New Person here</h5>
       <MDBInput id='form12Example2' label='Person Name' />
       </MDBModalBody>
       <MDBModalFooter>
-        <MDBBtn color='secondary' onClick={toggleShow}>
+        <MDBBtn color='secondary' onClick={toggleShow2}>
           Close
         </MDBBtn>
         <MDBBtn>Add</MDBBtn>

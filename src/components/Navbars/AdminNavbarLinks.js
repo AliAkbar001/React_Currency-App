@@ -1,3 +1,7 @@
+
+import 'mdb-react-ui-kit/dist/css/mdb.min.css';
+import "@fortawesome/fontawesome-free/css/all.min.css";
+
 // Chakra Icons
 import { BellIcon, SearchIcon } from "@chakra-ui/icons";
 // Chakra Imports
@@ -16,6 +20,33 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+
+
+import {
+  MDBCard,
+  MDBCardHeader,
+  MDBCardBody,
+  MDBCardTitle,
+  MDBCardText,
+  MDBBtn,
+  MDBInput, 
+  MDBRow, 
+  MDBCol,
+  MDBSwitch,
+  MDBCheckbox,
+  MDBModal,
+  MDBModalDialog,
+  MDBModalContent,
+  MDBModalHeader,
+  MDBModalTitle,
+  MDBModalBody,
+  MDBModalFooter,
+
+}
+from 'mdb-react-ui-kit';
+import Form from 'react-bootstrap/Form';
+
+
 // Assets
 import avatar1 from "assets/img/avatars/avatar1.png";
 import avatar2 from "assets/img/avatars/avatar2.png";
@@ -26,11 +57,12 @@ import { ProfileIcon, SettingsIcon } from "components/Icons/Icons";
 import { ItemContent } from "components/Menu/ItemContent";
 import SidebarResponsive from "components/Sidebar/SidebarResponsive";
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useState } from 'react';
 import { NavLink } from "react-router-dom";
 import routes from "routes.js";
 
 export default function HeaderLinks(props) {
+
   const { variant, children, fixed, secondary, onOpen, ...rest } = props;
   const { colorMode, toggleColorMode } = useColorMode();
   // Chakra Color Mode
@@ -45,6 +77,10 @@ export default function HeaderLinks(props) {
     mainText = "gray";
   }
   const settingsRef = React.useRef();
+
+
+  const [centredModal, setCentredModal] = useState(false);
+  const toggleShow = () => setCentredModal(!centredModal);
   return (
     <Flex
       pe={{ sm: "0px", md: "16px" }}
@@ -52,9 +88,70 @@ export default function HeaderLinks(props) {
       alignItems="center"
       flexDirection="row"
     >
-      <Button style={{marginRight:'1rem'}}>
+
+      
+      {/* <Button style={{marginRight:'1rem'}}>
       <Text display={{ sm: "none", md: "flex" }}>Update Currency</Text>
-      </Button>
+      </Button> */}
+      
+      <MDBBtn style={{marginRight:'1rem'}}  size= 'mg' onClick={toggleShow}>Add Currency</MDBBtn>
+
+      <MDBModal  show={centredModal} setShow={setCentredModal}>
+  <MDBModalDialog centered>
+    <MDBModalContent>
+      <MDBModalHeader>
+        <MDBModalTitle></MDBModalTitle>
+        <MDBBtn  className=' btn-close'  color='none' onClick={toggleShow}></MDBBtn>
+      </MDBModalHeader>
+      <MDBModalBody>
+
+
+ 
+      
+
+<MDBCard>
+      <MDBCardHeader style={{ fontSize: 21, fontWeight: 'bold' }} >ADD Currency</MDBCardHeader>
+      <MDBCardBody>
+        
+        <MDBRow className='g-1'>
+<MDBCol size='sm'>
+<Form.Select aria-label="Default select example"  textBefore='$'>
+  
+      <option>select Currency</option>
+      <option value="USD">USD</option>
+      <option value="PKR">PKR</option>
+      <option value="AUD">AUD</option>
+    </Form.Select>
+</MDBCol>
+
+      
+      <MDBInput id='form12Example2' label='Currency Rate' textBefore='$'/><br />
+      <MDBInput id='form12Example1' label='Amount' /><br />
+      <MDBInput id='form12Example2' label='Amount in PKR' disabled /><br />
+      <MDBCheckbox  name='inlineCheck' id='inlineCheckbox2' value='option2' label='Pending' inline /><br />
+
+    </MDBRow>
+    
+    <MDBInput  id='form12Example2' label='Add Pending Amount' /><br></br>
+    <div className='d-flex align-items-center justify-content-center  ' >
+    <MDBBtn  color='success'size='lg'>
+    Add Currency
+      </MDBBtn>
+    </div>
+      </MDBCardBody>
+    </MDBCard>
+
+      </MDBModalBody>
+      <MDBModalFooter>
+        <MDBBtn color='danger' onClick={toggleShow}>
+          Close
+        </MDBBtn>
+      </MDBModalFooter>
+    </MDBModalContent>
+  </MDBModalDialog>
+</MDBModal>
+
+
       <NavLink to="/auth/signin">
         <Button
           ms="0px"
