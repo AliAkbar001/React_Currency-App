@@ -105,10 +105,6 @@ export default function HeaderLinks(props) {
       </MDBModalHeader>
       <MDBModalBody>
 
-
- 
-      
-
 <MDBCard>
       <MDBCardHeader style={{ fontSize: 21, fontWeight: 'bold' }} >ADD Currency</MDBCardHeader>
       <MDBCardBody>

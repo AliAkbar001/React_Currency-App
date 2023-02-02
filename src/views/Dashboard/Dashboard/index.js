@@ -56,6 +56,8 @@ import {
   MDBModalBody,
   MDBModalFooter,
 
+  MDBBadge, MDBTable, MDBTableHead, MDBTableBody
+
 }
 from 'mdb-react-ui-kit';
 
@@ -67,10 +69,10 @@ import { Placeholder } from 'react-bootstrap';
 export default function Dashboard() {
   const iconBoxInside = useColorModeValue("white", "white");
   const [centredModal, setCentredModal] = useState(false);
-  const [centredModal2, setCentredModal2] = useState(false);
-
   const toggleShow = () => setCentredModal(!centredModal);
-  const toggleShow2 = () => setCentredModal2(!centredModal2);
+
+  const [centredModalUR, setCentredModalUR] = useState(false);
+  const updaterecord = () => setCentredModalUR(!centredModalUR);
 
 
 
@@ -116,66 +118,78 @@ export default function Dashboard() {
 <>
 
 <MDBCard>
-      <MDBCardHeader>ADD User and its Data</MDBCardHeader>
+      <MDBCardHeader style={{fontWeight: 'bold', fontSize: '20px'}}>ADD Currency Record</MDBCardHeader>
       <MDBCardBody>
-        <MDBCardTitle>Select Person & Add record</MDBCardTitle>
-        <MDBCardText>Add Personr if new, then select person and add record.</MDBCardText><br></br>
-        
-        <MDBRow className='g-3'>
-
-<MDBCol size='sm'>
-<Form.Select aria-label="Default select example">
+      
+        <br></br>
+    
+<MDBRow className='g-1'>
+<h1 style={{fontWeight: 'bold', fontSize: '16px'}}>Select Person</h1>
+   <MDBCol size='sm'>
+      <Form.Select aria-label="Default select example">
       <option>select Person</option>
       <option value="USD">Walking person</option>
       <option value="PKR">Ali</option>
       <option value="AUD">Saad</option>
-    </Form.Select>
-</MDBCol>
+      </Form.Select>
+    </MDBCol>
 
-<MDBCol size='sm'>
+<MDBRow size='sm' className='g-1' style={{marginTop:20}}>
+<h1 style={{fontWeight: 'bold', fontSize: '16px'}}>Select Currency</h1>
 <Form.Select aria-label="Default select example">
       <option>select Currency</option>
       <option value="USD">USD</option>
       <option value="PKR">PKR</option>
       <option value="AUD">AUD</option>
     </Form.Select>
-</MDBCol>
-      <MDBCol size='sm'>
+</MDBRow>
+      <MDBRow size='sm' className='g-1' style={{marginTop:20}}>
+      <h1 style={{fontWeight: 'bold', fontSize: '16px'}}>Add Currency Rate</h1>
         <MDBInput id='form12Example2' label='Currency Rate' /><br></br>
-      </MDBCol>
-      <MDBCol size='sm'>
+      </MDBRow>
+      <MDBRow size='sm' className='g-1' style={{marginTop:20}}>
+      <h1 style={{fontWeight: 'bold', fontSize: '16px'}}>Total Amount</h1>
          <MDBInput id='form12Example1' label='Amount' />
-      </MDBCol>
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Amount in PKR' /><br></br>
-      </MDBCol>
-      <MDBCol size='sm'>
-      <MDBCheckbox name='inlineCheck' id='inlineCheckbox1' value='option1' label='Cash' inline />
-      <MDBCheckbox name='inlineCheck' id='inlineCheckbox2' value='option2' label='Pending/Debt' inline /><br></br>
-      </MDBCol>
+      </MDBRow>
+      <MDBRow size='sm' className='g-1' style={{marginTop:40}}>
+        <h1 style={{fontWeight: 'bold', fontSize: '23px'}}>Your Total Amount in PKR</h1>
+        <MDBInput id='form12Example2' label='Amount in PKR' disabled style={{fontWeight: 'bold', fontColor: 'red'}}/><br></br>
+      </MDBRow>
 
     </MDBRow>
-    <div className='me-1 d-grid gap-5 col-2'>
-<MDBInput  id='form12Example2' label='Add Paid Amount' />  <MDBInput  id='form12Example2' label='Remaining Amount' />  <br></br>
-    </div>
+
+    <MDBRow style={{marginBottom:50, marginTop:50}}>
+    <MDBRow>
+      <MDBCheckbox name='inlineCheck' id='inlineCheckbox2' value='option2' label='Pending/Debt' inline /><br></br>
+      </MDBRow>
+    <MDBCol size='md-4'>
+        <MDBInput  id='form12Example2' label='Add Paid Amount' />
+    </MDBCol>
+
+    <MDBCol size='md-4'>
+        <MDBInput  id='form12Example2' label='Your Remaining Amount is' disabled />
+    </MDBCol>
+
+    </MDBRow>
+    
 
     <div className='d-flex align-items-center justify-content-center  ' >
 
-    <MDBBtn className='me-1 d-grid gap-5 col-2' size= 'lg' onClick={toggleShow2}>Add new Person</MDBBtn>
+    <MDBBtn className='me-1 d-grid gap-5 col-2' size= 'lg' onClick={toggleShow}>Add new Person</MDBBtn>
 
-<MDBModal tabIndex='-1' show={centredModal2} setShow={setCentredModal2}>
+<MDBModal tabIndex='-1' show={centredModal} setShow={setCentredModal}>
   <MDBModalDialog centered>
     <MDBModalContent>
       <MDBModalHeader>
         <MDBModalTitle></MDBModalTitle>
-        <MDBBtn className=' btn-close'  color='none' onClick={toggleShow2}></MDBBtn>
+        <MDBBtn className=' btn-close'  color='none' onClick={toggleShow}></MDBBtn>
       </MDBModalHeader>
       <MDBModalBody>
         <h5>Add New Person here</h5>
       <MDBInput id='form12Example2' label='Person Name' />
       </MDBModalBody>
       <MDBModalFooter>
-        <MDBBtn color='secondary' onClick={toggleShow2}>
+        <MDBBtn color='secondary' onClick={toggleShow}>
           Close
         </MDBBtn>
         <MDBBtn>Add</MDBBtn>
@@ -271,6 +285,184 @@ export default function Dashboard() {
           chart={<LineChart />}
         />
       </Grid>
+
+
+
+
+
+
+
+
+
+{/* -=========================================================================TABLE=============================================================== */}
+
+
+
+
+<MDBCard>
+      <MDBCardHeader style={{fontWeight: 'bold', fontSize: '20px'}}>Manage Users</MDBCardHeader>
+      <MDBCardBody>
+      <MDBTable align='middle'>
+      <MDBTableHead>
+        <tr>
+          <th scope='col'>Name</th>
+          <th scope='col'>Currency</th>
+          <th scope='col'>Total Amount</th>
+          <th scope='col'>Paid Amount</th>
+          <th scope='col'>Debt/Pending Amount</th>
+          <th scope='col'>Status</th>
+          <th scope='col'>Actions</th>
+        </tr>
+      </MDBTableHead>
+      <MDBTableBody>
+        <tr>
+          <td>
+            <div className='d-flex align-items-center'>
+              <div>
+                <p className='fw-bold mb-1'>John Doe</p>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <p className='fw-normal mb-1'>USD</p>
+          </td>
+
+          <td>
+            <p className='fw-normal mb-1'>100</p>
+          </td>
+
+
+          <td>
+          <p className='fw-normal mb-1'>100</p>
+          </td>
+          <td>
+          <p className='fw-normal mb-1'>0</p>
+          </td>
+ 
+          <td>
+            <MDBBadge color='success' pill style={{fontSize: '14px'}}>
+              Paid
+            </MDBBadge>
+          </td>
+          <td>
+            <MDBBtn color='link' rounded size='sm'>
+              Remove User
+            </MDBBtn>
+
+          </td>
+        </tr>
+
+
+        <tr>
+          <td>
+            <div className='d-flex align-items-center'>
+              <div>
+                <p className='fw-bold mb-1'>Saad</p>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <p className='fw-normal mb-1'>PKR</p>
+          </td>
+
+          <td>
+            <p className='fw-normal mb-1'>1400</p>
+          </td>
+
+          <td>
+          <p className='fw-normal mb-1'>1400</p>
+          </td>
+          <td>
+          <p className='fw-normal mb-1'>0</p>
+          </td>
+ 
+          <td>
+            <MDBBadge color='success' pill style={{fontSize: '14px'}}>
+              Paid
+            </MDBBadge>
+          </td>
+          <td>
+            <MDBBtn color='link' rounded size='sm'>
+              Remove User
+            </MDBBtn>
+
+          </td>
+        </tr>
+
+        
+        <tr>
+        <td>
+            <div className='d-flex align-items-center'>
+              <div>
+                <p className='fw-bold mb-1'>Ahmed</p>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <p className='fw-normal mb-1'>AUD</p>
+          </td>
+
+          <td>
+            <p className='fw-normal mb-1'>1200</p>
+          </td>
+
+
+          <td>
+          <p className='fw-normal mb-1'>750</p>
+          </td>
+          <td>
+          <p className='fw-normal mb-1'>450</p>
+          </td>
+ 
+          <td>
+            <MDBBadge color='warning' pill style={{fontSize: '14px'}}>
+              Pending
+            </MDBBadge>
+          </td>
+          <td>
+            <MDBBtn color='link' rounded size='sm' onClick={updaterecord}>
+              Update Record
+            </MDBBtn>
+            <MDBModal tabIndex='-1' show={centredModalUR} setShow={setCentredModalUR}>
+  <MDBModalDialog centered>
+    <MDBModalContent>
+      <MDBModalHeader>
+        <MDBModalTitle></MDBModalTitle>
+        <MDBBtn className=' btn-close'  color='none' onClick={updaterecord}></MDBBtn>
+      </MDBModalHeader>
+      <MDBModalBody>
+        <h2 style={{fontWeight: 'bold', fontSize:'20px'}}>Update Person Amount</h2><br></br>
+        
+        <MDBInput id='form12Example2' label='Update Payment Record' />
+      
+      </MDBModalBody>
+      <MDBModalFooter>
+        <MDBBtn color='secondary' onClick={updaterecord}>
+          Close
+        </MDBBtn>
+        <MDBBtn color='danger'>Update Amount</MDBBtn>
+
+      </MDBModalFooter>
+    </MDBModalContent>
+  </MDBModalDialog>
+</MDBModal>
+
+            <MDBBtn color='link' rounded size='sm'>
+              Remove User
+            </MDBBtn>
+
+          </td>
+        </tr>
+      </MDBTableBody>
+    </MDBTable>
+        </MDBCardBody>
+        </MDBCard>
+
+
+
     </Flex>
   );
 }
