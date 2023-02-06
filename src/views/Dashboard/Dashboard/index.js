@@ -3,17 +3,33 @@ import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 import "@fortawesome/fontawesome-free/css/all.min.css";
 // Chakra imports
 import {
+  Box,
   Flex,
+  FormControl,
+  FormLabel,
+  Select,
+  Text,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Radio,
+  HStack,
+  RadioGroup,
   Grid,
   Image,
   SimpleGrid,
   useColorModeValue,
+  Button,
 } from "@chakra-ui/react";
 // assets
 import peopleImage from "assets/img/people-image.png";
 import logoChakra from "assets/svg/logo-white.svg";
 import BarChart from "components/Charts/BarChart";
 import LineChart from "components/Charts/LineChart";
+import Card from "components/Card/Card.js";
+import CardBody from "components/Card/CardBody.js";
 // Custom icons
 import {
   CartIcon,
@@ -66,8 +82,9 @@ import { Placeholder } from 'react-bootstrap';
 export default function Dashboard() {
   const iconBoxInside = useColorModeValue("white", "white");
   const [centredModal, setCentredModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const toggleShow = () => setCentredModal(!centredModal);
-
+  const handlePayment = (e) => setPaymentMethod(e)
 
   return (
     
@@ -98,228 +115,96 @@ export default function Dashboard() {
           icon={<CartIcon h={"24px"} w={"24px"} color={iconBoxInside} />}
         />
       </SimpleGrid>
-
-
-
-{/* ------------------Add sale and buying details here---------------------*/}
-
-
-      <Grid
-        templateColumns={{ md: "1fr" }}
-        templateRows={{ md: "1fr auto", lg: "1fr" }}
-        my='26px'
-        gap='24px'>
-<>
-
-<MDBCard>
-      <MDBCardHeader>ADD and Sell Currency</MDBCardHeader>
-      <MDBCardBody>
-        <MDBCardTitle>Select currency and add amount</MDBCardTitle>
-        <MDBCardText>Use Buttons to Buy or Sell Currency.</MDBCardText><br></br>
-        
-        <MDBRow className='g-3'>
-
-<MDBCol size='sm'>
-<Form.Select aria-label="Default select example">
-      <option>select Currency</option>
-      <option value="USD">USD</option>
-      <option value="PKR">PKR</option>
-      <option value="AUD">AUD</option>
-    </Form.Select>
-</MDBCol>
-
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Currency Rate' /><br></br>
-      </MDBCol>
-
-      <MDBCol size='sm'>
-         <MDBInput id='form12Example1' label='Amount' />
-      </MDBCol>
-
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Amount in PKR' /><br></br>
-      </MDBCol>
-
-      <MDBCol size='sm'>
-      <MDBCheckbox name='inlineCheck' id='inlineCheckbox1' value='option1' label='Cash' inline />
-      <MDBCheckbox name='inlineCheck' id='inlineCheckbox2' value='option2' label='Pending' inline /><br></br>
-      </MDBCol>
-
-    </MDBRow>
-    <div className='me-1 d-grid gap-5 col-2'>
-<MDBInput  id='form12Example2' label='Add Pending Amount' /><br></br>
-    </div>
-
-    <div className='d-flex align-items-center justify-content-center  ' >
-    <MDBBtn className='me-1 d-grid gap-5 col-2' color='success'size='lg'>
-        Buy
-      </MDBBtn>
-      <MDBBtn className='me-1 d-grid gap-5 col-2' color='danger' size='lg'>
-        Sell
-      </MDBBtn>
-    </div>
-      </MDBCardBody>
-    </MDBCard>
-</>
-      </Grid>
-
-
-
-
-{/* --------------------Update payment by selected or new uer... also create new user here-------------------*/}
-
-      <Grid
-        templateColumns={{ md: "1fr" }}
-        templateRows={{ md: "1fr auto", lg: "1fr" }}
-        my='26px'
-        gap='24px'>
-<>
-
-<MDBCard>
-      <MDBCardHeader>ADD User and its Data</MDBCardHeader>
-      <MDBCardBody>
-        <MDBCardTitle>Select Person & Add record</MDBCardTitle>
-        <MDBCardText>Add Personr if new, then select person and add record.</MDBCardText><br></br>
-        
-        <MDBRow className='g-3'>
-
-<MDBCol size='sm'>
-<Form.Select aria-label="Default select example">
-      <option>select Person</option>
-      <option value="USD">Walking person</option>
-      <option value="PKR">Ali</option>
-      <option value="AUD">Saad</option>
-    </Form.Select>
-</MDBCol>
-
-<MDBCol size='sm'>
-<Form.Select aria-label="Default select example">
-      <option>select Currency</option>
-      <option value="USD">USD</option>
-      <option value="PKR">PKR</option>
-      <option value="AUD">AUD</option>
-    </Form.Select>
-</MDBCol>
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Currency Rate' /><br></br>
-      </MDBCol>
-      <MDBCol size='sm'>
-         <MDBInput id='form12Example1' label='Amount' />
-      </MDBCol>
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Amount in PKR' /><br></br>
-      </MDBCol>
-      <MDBCol size='sm'>
-      <MDBCheckbox name='inlineCheck' id='inlineCheckbox1' value='option1' label='Cash' inline />
-      <MDBCheckbox name='inlineCheck' id='inlineCheckbox2' value='option2' label='Pending/Debt' inline /><br></br>
-      </MDBCol>
-
-    </MDBRow>
-    <div className='me-1 d-grid gap-5 col-2'>
-<MDBInput  id='form12Example2' label='Add Paid Amount' />  <MDBInput  id='form12Example2' label='Remaining Amount' />  <br></br>
-    </div>
-
-    <div className='d-flex align-items-center justify-content-center  ' >
-
-    <MDBBtn className='me-1 d-grid gap-5 col-2' size= 'lg' onClick={toggleShow}>Add new Person</MDBBtn>
-
-<MDBModal tabIndex='-1' show={centredModal} setShow={setCentredModal}>
-  <MDBModalDialog centered>
-    <MDBModalContent>
-      <MDBModalHeader>
-        <MDBModalTitle></MDBModalTitle>
-        <MDBBtn className=' btn-close'  color='none' onClick={toggleShow}></MDBBtn>
-      </MDBModalHeader>
-      <MDBModalBody>
-        <h5>Add New Person here</h5>
-      <MDBInput id='form12Example2' label='Person Name' />
-      </MDBModalBody>
-      <MDBModalFooter>
-        <MDBBtn color='secondary' onClick={toggleShow}>
-          Close
-        </MDBBtn>
-        <MDBBtn>Add</MDBBtn>
-      </MDBModalFooter>
-    </MDBModalContent>
-  </MDBModalDialog>
-</MDBModal>
-
-
-    <MDBBtn className='me-1 d-grid gap-5 col-2' color='success'size='lg'>
-        Buy
-      </MDBBtn>
-      <MDBBtn className='me-1 d-grid gap-5 col-2' color='danger' size='lg'>
-        Sell
-      </MDBBtn>
-
-    </div>
-      </MDBCardBody>
-    </MDBCard>
-</>
-      </Grid>
-
-{/* --------------------------------------------Update Person Debt Record Here----------------------------------------------*/}
-
-      <Grid
-        templateColumns={{ md: "1fr" }}
-        templateRows={{ md: "1fr auto", lg: "1fr" }}
-        my='26px'
-        gap='24px'>
-<>
-<MDBCard>
-      <MDBCardHeader>Person Debt and Paid Record</MDBCardHeader>
-      <MDBCardBody>
-        <MDBCardTitle>Select person to ceck its payment record</MDBCardTitle>
-        <MDBCardText>Use Buttons to update person's payment record.</MDBCardText><br></br>
-        
-        <MDBRow className='g-3'>
-
-<MDBCol size='sm'>
-<Form.Select aria-label="Default select example">
-      <option>select Person</option>
-      <option value="USD">ahmed</option>
-      <option value="PKR">ali</option>
-      <option value="AUD">saad</option>
-    </Form.Select>
-</MDBCol>
-
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Paid Amount' disabled /><br></br>
-      </MDBCol>
-
-      <MDBCol size='sm'>
-         <MDBInput id='form12Example1' label='Remaining Amount'disabled />
-      </MDBCol>
-
-      <MDBCol size='sm'>
-        <MDBInput id='form12Example2' label='Add new payment' /><br></br>
-      </MDBCol>
-
-    </MDBRow>
-
-
-    <div className='d-flex align-items-center justify-content-center  ' >
-      <MDBBtn className='me-1 d-grid gap-5 col-2' color='danger' size='lg'>
-        Update Record
-      </MDBBtn>
-    </div>
-      </MDBCardBody>
-    </MDBCard>
-</>
-      </Grid>
-
-
-
-
-{/* ====================================Charts===============================================*/}
-
-
-
       <Grid
         templateColumns={{ sm: "1fr", lg: "1.3fr 1.7fr" }}
         templateRows={{ sm: "repeat(2, 1fr)", lg: "1fr" }}
         gap='24px'
-        mb={{ lg: "26px" }}>
+        mb={{ lg: "26px" }}
+        style={{'padding': '2rem 0'}}
+        >
+          <Card style={{'padding': '2rem', width:'100%'}}>
+            <CardBody style={{width:'100%'}}>
+              <Box style={{width:'100%'}}>
+                <Text style={{"fontWeight": "bold",'marginBottom':'2rem'}}>ADD Currency Record</Text>
+                <FormControl isRequired style={{'marginBottom': '1rem'}}>
+                  <FormLabel>Select User</FormLabel>
+                  <Select placeholder='Select Currency'>
+                    <option value="USD">Walking</option>
+                    <option value="PKR">Ali</option>
+                    <option value="AUD">Ahmed</option>
+                  </Select>
+                </FormControl>
+                <FormControl isRequired style={{'marginBottom': '1rem'}}>
+                  <FormLabel>Currency</FormLabel>
+                  <Select placeholder='Select Currency'>
+                    <option value="USD">USD</option>
+                    <option value="PKR">PKR</option>
+                    <option value="AUD">AUD</option>
+                  </Select>
+                </FormControl>
+                <FormControl isRequired style={{'marginBottom': '1rem'}}>
+                  <FormLabel>Currency Amount</FormLabel>
+                  <NumberInput max={50} min={10}>
+                    <NumberInputField/>
+                    <NumberInputStepper>
+                      <NumberIncrementStepper/>
+                      <NumberDecrementStepper/>
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+                <FormControl isRequired style={{'marginBottom': '1rem'}}>
+                  <FormLabel>Currency Rate</FormLabel>
+                  <NumberInput max={50} min={10}>
+                    <NumberInputField/>
+                    <NumberInputStepper>
+                      <NumberIncrementStepper/>
+                      <NumberDecrementStepper/>
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+                <FormControl isRequired as='fieldset' style={{'marginBottom': '1rem'}}>
+                <FormLabel>Payment Method</FormLabel>
+                  <RadioGroup onChange={handlePayment} value={paymentMethod}>
+                    <HStack spacing='24px'>
+                      <Radio value='cash'>Cash</Radio>
+                      <Radio value='pending'>Pending</Radio>
+                    </HStack>
+                  </RadioGroup>
+                </FormControl>
+                {paymentMethod === 'pending' && 
+                <>
+                <FormControl isRequired style={{'marginBottom': '1rem'}}>
+                  <FormLabel>Receiving Amount</FormLabel>
+                  <NumberInput max={50} min={10}>
+                    <NumberInputField/>
+                    <NumberInputStepper>
+                      <NumberIncrementStepper/>
+                      <NumberDecrementStepper/>
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+                <FormControl isRequired style={{'marginBottom': '1rem'}}>
+                  <FormLabel>Pending Amount</FormLabel>
+                  <NumberInput max={50} min={10} isDisabled>
+                    <NumberInputField/>
+                    <NumberInputStepper>
+                      <NumberIncrementStepper/>
+                      <NumberDecrementStepper/>
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormControl>
+                </>
+                }
+                <Text style={{margin:'2rem 0'}}>Total Amount 
+                  <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>0PKR</span>
+                </Text>
+                <Flex flexDirection={'row'} justifyContent={"end"}>
+                  <Button colorScheme='blue' mr={3}>Add</Button>
+                  <Button variant='ghost'>Cancel</Button>
+                </Flex>
+              </Box>
+            </CardBody>
+          </Card>
         <ActiveUsers
           title={"Monthly Sales in PKR"}
           percentage={23}

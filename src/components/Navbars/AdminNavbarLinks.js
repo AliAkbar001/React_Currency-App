@@ -30,7 +30,7 @@ import { ProfileIcon } from "components/Icons/Icons";
 // Custom Components
 import SidebarResponsive from "components/Sidebar/SidebarResponsive";
 import PropTypes from "prop-types";
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import routes from "routes.js";
 
@@ -39,7 +39,8 @@ export default function HeaderLinks(props) {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure()
   let navbarIcon = useColorModeValue("gray.500", "gray.200");
-
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const handlePayment = (e) => setPaymentMethod(e)
   if (secondary) {
     navbarIcon = "gray";
     mainText = "gray";
@@ -126,14 +127,41 @@ export default function HeaderLinks(props) {
                 </NumberInputStepper>
               </NumberInput>
             </FormControl>
-            <FormControl isRequired as='fieldset'>
-              <RadioGroup>
+            <FormControl isRequired as='fieldset' style={{'marginBottom': '1rem'}}>
+            <FormLabel>Payment Method</FormLabel>
+              <RadioGroup onChange={handlePayment} value={paymentMethod}>
                 <HStack spacing='24px'>
-                  <Radio value='cask'>Cash</Radio>
+                  <Radio value='cash'>Cash</Radio>
                   <Radio value='pending'>Pending</Radio>
                 </HStack>
               </RadioGroup>
             </FormControl>
+            {paymentMethod === 'pending' && 
+            <>
+            <FormControl isRequired style={{'marginBottom': '1rem'}}>
+              <FormLabel>Receiving Amount</FormLabel>
+              <NumberInput max={50} min={10}>
+                <NumberInputField/>
+                <NumberInputStepper>
+                  <NumberIncrementStepper/>
+                  <NumberDecrementStepper/>
+                </NumberInputStepper>
+              </NumberInput>
+            </FormControl>
+            <FormControl isRequired style={{'marginBottom': '1rem'}}>
+              <FormLabel>Pending Amount</FormLabel>
+              <NumberInput max={50} min={10} isDisabled>
+                <NumberInputField/>
+                <NumberInputStepper>
+                  <NumberIncrementStepper/>
+                  <NumberDecrementStepper/>
+                </NumberInputStepper>
+              </NumberInput>
+            </FormControl>
+            </>}
+            <Text style={{margin:'2rem 0'}}>Total Amount 
+                <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>0PKR</span>
+              </Text>
           </ModalBody>
           <ModalFooter>
             <Button colorScheme='blue' mr={3}>
