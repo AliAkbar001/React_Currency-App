@@ -1,11 +1,5 @@
 // import
 import Dashboard from "views/Dashboard/Dashboard";
-import Tables from "views/Dashboard/Tables";
-import Billing from "views/Dashboard/Billing";
-import RTLPage from "views/Dashboard/RTL";
-import Profile from "views/Dashboard/Profile";
-import SignIn from "views/Auth/SignIn.js";
-import SignUp from "views/Auth/SignUp.js";
 
 import {
   HomeIcon,
@@ -19,6 +13,8 @@ import {
 import ManageUsers from "views/Dashboard/ManageUsers";
 import ManageCurrency from "views/Dashboard/ManageCurrency";
 import Statistics from "views/Dashboard/Statistics";
+import Expenses from "views/Dashboard/Expenses";
+import Currency from "views/Dashboard/Dashboard/components/Currency";
 
 var dashRoutes = [
   {
@@ -44,12 +40,20 @@ var dashRoutes = [
   //   component: ManageCurrency,
   //   layout: "/admin",
   // },
+  {
+    path: "/expenses",
+    name: "Manage Expenses",
+    icon: <StatsIcon color="inherit" />,
+    secondaryNavbar: true,
+    component: Expenses,
+    layout: "/admin",
+  },
   // {
-  //   path: "/statistics",
-  //   name: "Statistics",
+  //   path: "/currency",
+  //   name: "Currency",
   //   icon: <StatsIcon color="inherit" />,
   //   secondaryNavbar: true,
-  //   component: Statistics,
+  //   component: Currency,
   //   layout: "/admin",
   // }
 ];
