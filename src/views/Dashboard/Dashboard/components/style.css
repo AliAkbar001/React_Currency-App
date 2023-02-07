@@ -1,0 +1,11 @@
+.chakra-table tr{
+    cursor: pointer;
+   
+    transition: 0.3s;
+}
+.chakra-table td, .chakra-table th{
+    text-align: center;
+}
+.chakra-table tr:hover{
+   background-color: rgba(99, 99, 99, 0.107);
+}

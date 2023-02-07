@@ -36,21 +36,21 @@ var dashRoutes = [
     component: ManageUsers,
     layout: "/admin",
   },
-  {
-    path: "/manage-currency",
-    name: "Manage Currency",
-    icon: <CreditIcon color="inherit" />,
-    secondaryNavbar: true,
-    component: ManageCurrency,
-    layout: "/admin",
-  },
-  {
-    path: "/statistics",
-    name: "Statistics",
-    icon: <StatsIcon color="inherit" />,
-    secondaryNavbar: true,
-    component: Statistics,
-    layout: "/admin",
-  }
+  // {
+  //   path: "/manage-currency",
+  //   name: "Manage Currency",
+  //   icon: <CreditIcon color="inherit" />,
+  //   secondaryNavbar: true,
+  //   component: ManageCurrency,
+  //   layout: "/admin",
+  // },
+  // {
+  //   path: "/statistics",
+  //   name: "Statistics",
+  //   icon: <StatsIcon color="inherit" />,
+  //   secondaryNavbar: true,
+  //   component: Statistics,
+  //   layout: "/admin",
+  // }
 ];
 export default dashRoutes;

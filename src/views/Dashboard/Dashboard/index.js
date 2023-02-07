@@ -21,11 +21,8 @@ import {
   Image,
   SimpleGrid,
   useColorModeValue,
-  Button,
+  Button
 } from "@chakra-ui/react";
-// assets
-import peopleImage from "assets/img/people-image.png";
-import logoChakra from "assets/svg/logo-white.svg";
 import BarChart from "components/Charts/BarChart";
 import LineChart from "components/Charts/LineChart";
 import Card from "components/Card/Card.js";
@@ -37,53 +34,18 @@ import {
   GlobeIcon,
   WalletIcon,
 } from "components/Icons/Icons.js";
-//import React from "react";
-import { dashboardTableData, timelineData } from "variables/general";
 import ActiveUsers from "./components/ActiveUsers";
-import BuiltByDevelopers from "./components/BuiltByDevelopers";
 import MiniStatistics from "./components/MiniStatistics";
-import OrdersOverview from "./components/OrdersOverview";
-import Projects from "./components/Projects";
 import SalesOverview from "./components/SalesOverview";
-import WorkWithTheRockets from "./components/WorkWithTheRockets";
-
 import React, { useState } from 'react';
-
-
-
-import {
-  MDBCard,
-  MDBCardHeader,
-  MDBCardBody,
-  MDBCardTitle,
-  MDBCardText,
-  MDBBtn,
-  MDBInput, 
-  MDBRow, 
-  MDBCol,
-  MDBSwitch,
-  MDBCheckbox,
-  MDBModal,
-  MDBModalDialog,
-  MDBModalContent,
-  MDBModalHeader,
-  MDBModalTitle,
-  MDBModalBody,
-  MDBModalFooter,
-
-}
-from 'mdb-react-ui-kit';
-
-import Form from 'react-bootstrap/Form';
-import { Placeholder } from 'react-bootstrap';
-
+import Transactions from '../Billing/components/Transactions';
+import { newestTransactions} from "variables/general";
+import Currency from './components/Currency';
 
 
 export default function Dashboard() {
   const iconBoxInside = useColorModeValue("white", "white");
-  const [centredModal, setCentredModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  const toggleShow = () => setCentredModal(!centredModal);
   const handlePayment = (e) => setPaymentMethod(e)
 
   return (
@@ -215,7 +177,13 @@ export default function Dashboard() {
           percentage={5}
           chart={<LineChart />}
         />
+         <Transactions
+          title={"Your Transactions"}
+          date={"23 - 30 March"}
+          newestTransactions={newestTransactions}
+        />
       </Grid>
+      <Currency></Currency>
     </Flex>
   );
 }

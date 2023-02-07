@@ -43,7 +43,6 @@ export default function HeaderLinks(props) {
   const handlePayment = (e) => setPaymentMethod(e)
   if (secondary) {
     navbarIcon = "gray";
-    mainText = "gray";
   }
   const settingsRef = React.useRef();
   return (
@@ -179,5 +178,5 @@ HeaderLinks.propTypes = {
   variant: PropTypes.string,
   fixed: PropTypes.bool,
   secondary: PropTypes.bool,
-  // onOpen: PropTypes.func,
+  onOpen: PropTypes.func,
 };

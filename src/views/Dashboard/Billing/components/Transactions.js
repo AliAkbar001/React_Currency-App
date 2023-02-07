@@ -12,7 +12,6 @@ const Transactions = ({
   title,
   date,
   newestTransactions,
-  olderTransactions,
 }) => {
   // Chakra color mode
   const textColor = useColorModeValue("gray.700", "white");
@@ -48,31 +47,7 @@ const Transactions = ({
       </CardHeader>
       <CardBody>
         <Flex direction='column' w='100%'>
-          <Text
-            color='gray.400'
-            fontSize={{ sm: "sm", md: "md" }}
-            fontWeight='semibold'
-            my='12px'>
-            NEWEST
-          </Text>
           {newestTransactions.map((row) => {
-            return (
-              <TransactionRow
-                name={row.name}
-                logo={row.logo}
-                date={row.date}
-                price={row.price}
-              />
-            );
-          })}
-          <Text
-            color='gray.400'
-            fontSize={{ sm: "sm", md: "md" }}
-            fontWeight='semibold'
-            my='12px'>
-            OLDER
-          </Text>
-          {olderTransactions.map((row) => {
             return (
               <TransactionRow
                 name={row.name}
