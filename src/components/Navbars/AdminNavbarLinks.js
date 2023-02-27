@@ -23,6 +23,7 @@ import {
   Radio,
   HStack,
   RadioGroup,
+  Input,
 } from "@chakra-ui/react";
 
 // Custom Icons
@@ -54,7 +55,7 @@ export default function HeaderLinks(props) {
       flexDirection="row"
     >
       <Button onClick={onOpen} style={{marginRight:'1rem'}}>
-      <Text  display={{ sm: "none", md: "flex" }}>Update Currency</Text>
+      <Text  display={{ sm: "none", md: "flex" }}>Add Expense</Text>
       </Button>
       <NavLink to="/auth/signin">
         <Button
@@ -95,16 +96,12 @@ export default function HeaderLinks(props) {
     <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Update Currency</ModalHeader>
+          <ModalHeader>Add Expense</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <FormControl isRequired style={{'marginBottom': '1rem'}}>
-              <FormLabel>Currency</FormLabel>
-              <Select placeholder='Select Currency'>
-                <option value="USD">USD</option>
-                <option value="PKR">PKR</option>
-                <option value="AUD">AUD</option>
-              </Select>
+          <FormControl isRequired style={{'marginBottom': '1rem'}}>
+              <FormLabel>Expense Title</FormLabel>
+              <Input/>
             </FormControl>
             <FormControl isRequired style={{'marginBottom': '1rem'}}>
               <FormLabel>Amount</FormLabel>
@@ -116,55 +113,10 @@ export default function HeaderLinks(props) {
                 </NumberInputStepper>
               </NumberInput>
             </FormControl>
-            <FormControl isRequired style={{'marginBottom': '1rem'}}>
-              <FormLabel>Currency Rate</FormLabel>
-              <NumberInput max={50} min={10}>
-                <NumberInputField/>
-                <NumberInputStepper>
-                  <NumberIncrementStepper/>
-                  <NumberDecrementStepper/>
-                </NumberInputStepper>
-              </NumberInput>
-            </FormControl>
-            <FormControl isRequired as='fieldset' style={{'marginBottom': '1rem'}}>
-            <FormLabel>Payment Method</FormLabel>
-              <RadioGroup onChange={handlePayment} value={paymentMethod}>
-                <HStack spacing='24px'>
-                  <Radio value='cash'>Cash</Radio>
-                  <Radio value='pending'>Pending</Radio>
-                </HStack>
-              </RadioGroup>
-            </FormControl>
-            {paymentMethod === 'pending' && 
-            <>
-            <FormControl isRequired style={{'marginBottom': '1rem'}}>
-              <FormLabel>Receiving Amount</FormLabel>
-              <NumberInput max={50} min={10}>
-                <NumberInputField/>
-                <NumberInputStepper>
-                  <NumberIncrementStepper/>
-                  <NumberDecrementStepper/>
-                </NumberInputStepper>
-              </NumberInput>
-            </FormControl>
-            <FormControl isRequired style={{'marginBottom': '1rem'}}>
-              <FormLabel>Pending Amount</FormLabel>
-              <NumberInput max={50} min={10} isDisabled>
-                <NumberInputField/>
-                <NumberInputStepper>
-                  <NumberIncrementStepper/>
-                  <NumberDecrementStepper/>
-                </NumberInputStepper>
-              </NumberInput>
-            </FormControl>
-            </>}
-            <Text style={{margin:'2rem 0'}}>Total Amount 
-                <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>0PKR</span>
-              </Text>
           </ModalBody>
           <ModalFooter>
             <Button colorScheme='blue' mr={3}>
-              Update
+              Add
             </Button>
             <Button variant='ghost' onClick={onClose}>Cancel</Button>
           </ModalFooter>

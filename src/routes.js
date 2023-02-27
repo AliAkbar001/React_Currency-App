@@ -15,6 +15,7 @@ import ManageCurrency from "views/Dashboard/ManageCurrency";
 import Statistics from "views/Dashboard/Statistics";
 import Expenses from "views/Dashboard/Expenses";
 import Currency from "views/Dashboard/Dashboard/components/Currency";
+import Details from "views/Dashboard/Details";
 
 var dashRoutes = [
   {
@@ -42,10 +43,18 @@ var dashRoutes = [
   // },
   {
     path: "/expenses",
-    name: "Manage Expenses",
-    icon: <StatsIcon color="inherit" />,
+    name: "Expenses",
+    icon: <CreditIcon color="inherit" />,
     secondaryNavbar: true,
     component: Expenses,
+    layout: "/admin",
+  },
+  {
+    path: "/details",
+    name: "Details",
+    icon: <StatsIcon color="inherit" />,
+    secondaryNavbar: true,
+    component: Details,
     layout: "/admin",
   },
   // {

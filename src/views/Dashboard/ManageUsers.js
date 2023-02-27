@@ -24,7 +24,14 @@ import {
     ModalHeader,
     Modal,
     FormControl,
-    FormLabel
+    FormLabel,
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogContent,
+    AlertDialogOverlay,
+    AlertDialogCloseButton,
 } from '@chakra-ui/react'
 import Card from 'components/Card/Card'
 import CardBody from 'components/Card/CardBody'
@@ -33,13 +40,15 @@ import React from 'react'
 import { useState } from 'react'
 import './style.css'
 export default function ManageUsers() {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-    const [currencySummaryType, setCurrencySummaryType] = useState('');
+  const { isOpen, onOpen, onClose} = useDisclosure()
+  const [disclosureType, setDisclosureType] = useState('');
+  const cancelRef = React.useRef()
 
-    function ToggleCurrency(currency){
-        setCurrencySummaryType(currency)
-        onOpen()
+    function ToggleDisclosure(type){
+      setDisclosureType(type)
+      onOpen()
     }
+
   return (
     <div style={{marginTop:'5rem'}}>
     <Card>
@@ -56,7 +65,7 @@ export default function ManageUsers() {
                 <Input type='tel' placeholder='Search Here' />
               </InputGroup>
             </Stack>
-            <Button onClick={()=>ToggleCurrency(null)} style={{marginLeft:'1rem'}}><PersonIcon/>New User</Button>
+            <Button onClick={()=>ToggleDisclosure('new-user')} style={{marginLeft:'1rem'}}><PersonIcon/>New User</Button>
             </Flex>
           </Flex>
         <TableContainer style={{width: '100%'}}>
@@ -66,31 +75,41 @@ export default function ManageUsers() {
         <Th>NO#</Th>
         <Th>Users</Th>
         <Th>Payment</Th>
+        <Th>Payment Method</Th>
         <Th>Last Date</Th>
       </Tr>
     </Thead>
     <Tbody>
-      <Tr onClick={()=>ToggleCurrency('Walking')}>
+      <Tr onClick={()=>ToggleDisclosure('user-summary')}>
         <Td>1</Td>
         <Td>Walking</Td>
         <Td>
             <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
         </Td>
+        <Td>
+          <Badge variant='solid' colorScheme='green'>Sell</Badge>
+        </Td>
         <Td>7/12/2023 10:30AM</Td>
       </Tr>
-      <Tr onClick={()=>ToggleCurrency('Ali')}>
+      <Tr onClick={()=>ToggleDisclosure('user-summary')}>
         <Td>2</Td>
         <Td>Ali</Td>
         <Td>
             <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
         </Td>
+        <Td>
+          <Badge variant='solid' colorScheme='yellow'>Purchase</Badge>
+        </Td>
         <Td>2/12/2023 3:30PM</Td>
       </Tr>
-      <Tr onClick={()=>ToggleCurrency('Ahmed')}>
+      <Tr onClick={()=>ToggleDisclosure('user-summary')}>
         <Td>3</Td>
         <Td>Ahmed</Td>
         <Td>
             <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
+        </Td>
+        <Td>
+          <Badge variant='solid' colorScheme='green'>Sell</Badge>
         </Td>
         <Td>15/10/2023 2:00PM</Td>
       </Tr>
@@ -99,25 +118,58 @@ export default function ManageUsers() {
 </TableContainer>
         </CardBody>
     </Card>
-
-{currencySummaryType !== null ? 
+{disclosureType === 'alert' && 
+    <AlertDialog
+        motionPreset='slideInBottom'
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+        isOpen={isOpen}
+        isCentered
+      >
+        <AlertDialogOverlay />
+        <AlertDialogContent>
+          <AlertDialogHeader>Complete Payment?</AlertDialogHeader>
+          <AlertDialogCloseButton/>
+          <AlertDialogFooter>
+            <Button ref={cancelRef} onClick={onClose}>
+              No
+            </Button>
+            <Button colorScheme='red' ml={3}>
+              Yes
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+}
+{disclosureType === 'user-summary' &&
 <Modal onClose={onClose} size={'full'} isOpen={isOpen}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-          <Flex justifyContent={'space-between'}>
+          <Flex justifyContent={'space-between'} alignItems={'center'}>
               <Text style={{fontWeight: 'bold', fontSize:'large'}}>
-                {currencySummaryType} currencySummary
+                User Summary
               </Text>
-              <Stack spacing={4} style={{marginRight:'4rem'}}>
-              <InputGroup>
-                <InputLeftElement
-                  pointerEvents='none'
-                  children={<SearchIcon color='gray.300' />}
-                />
+            <Flex justifyContent={'space-between'} alignItems={'end'} gap={'0.5rem'}>
+              <FormControl>
+                <FormLabel>Search User</FormLabel>
+                <InputGroup>
+                  <InputLeftElement
+                    pointerEvents='none'
+                    children={<SearchIcon color='gray.300' />}
+                  />
                 <Input type='tel' placeholder='Search Here' />
               </InputGroup>
-            </Stack>
+              </FormControl>
+              <FormControl>
+              <FormLabel>Start Date</FormLabel>
+              <Input type='datetime-local'/>
+              </FormControl>
+              <FormControl>
+                <FormLabel>End Date</FormLabel>
+                <Input type='datetime-local'/>
+              </FormControl>
+            </Flex>
           </Flex>
           </ModalHeader>
           <ModalCloseButton />
@@ -129,7 +181,7 @@ export default function ManageUsers() {
                   <Th>NO#</Th>
                   <Th>Date</Th>
                   <Th>Currency</Th>
-                  <Th>Action</Th>
+                  <Th>Payment</Th>
                   <Th>Payment Method</Th>
                   <Th isNumeric>Amount</Th>
                 </Tr>
@@ -140,10 +192,10 @@ export default function ManageUsers() {
                   <Td>2/12/2023 3:30PM</Td>
                   <Td>EUR</Td>
                   <Td>
-                      <Badge variant='outline' colorScheme='green' fontSize='0.9em'>Sell</Badge>
+                    <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
                   </Td>
                   <Td>
-                      <Badge colorScheme='green' fontSize='0.9em'>Cash</Badge>
+                    <Badge variant='solid' colorScheme='green'>Sell</Badge>
                   </Td>
                   <Td isNumeric>
                       20000 RS
@@ -154,11 +206,12 @@ export default function ManageUsers() {
                   <Td>3/10/2023 6:30PM</Td>
                   <Td>AUD</Td>
                   <Td>
-                      <Badge variant='outline' colorScheme='gray' fontSize='0.9em'>Purchase</Badge>
+                    <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
                   </Td>
                   <Td>
-                      <Badge colorScheme='green' fontSize='0.9em'>Cash</Badge>
+                    <Badge variant='solid' colorScheme='yellow'>Purchase</Badge>
                   </Td>
+                 
                   <Td isNumeric>
                       20000 RS
                   </Td>
@@ -168,11 +221,12 @@ export default function ManageUsers() {
                   <Td>2/12/2023 5:30PM</Td>
                   <Td>USD</Td>
                   <Td>
-                      <Badge variant='outline' colorScheme='green' fontSize='0.9em'>Sell</Badge>
+                    <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
                   </Td>
                   <Td>
-                      <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
+                    <Badge variant='solid' colorScheme='green'>Sell</Badge>
                   </Td>
+                  
                   <Td isNumeric>
                       20000 RS
                   </Td>
@@ -185,10 +239,9 @@ export default function ManageUsers() {
             <Button onClick={onClose}>Close</Button>
           </ModalFooter>
         </ModalContent>
-
-        
       </Modal>
-      :
+}
+{disclosureType === 'new-user' &&
       <Modal
       isOpen={isOpen}
       onClose={onClose}

@@ -17,30 +17,12 @@ import {
   Radio,
   HStack,
   RadioGroup,
-  Grid,
-  Image,
-  SimpleGrid,
   useColorModeValue,
   Button
 } from "@chakra-ui/react";
-import BarChart from "components/Charts/BarChart";
-import LineChart from "components/Charts/LineChart";
 import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
-// Custom icons
-import {
-  CartIcon,
-  DocumentIcon,
-  GlobeIcon,
-  WalletIcon,
-} from "components/Icons/Icons.js";
-import ActiveUsers from "./components/ActiveUsers";
-import MiniStatistics from "./components/MiniStatistics";
-import SalesOverview from "./components/SalesOverview";
 import React, { useState } from 'react';
-import Transactions from '../Billing/components/Transactions';
-import { newestTransactions} from "variables/general";
-import Currency from './components/Currency';
 
 
 export default function Dashboard() {
@@ -50,41 +32,8 @@ export default function Dashboard() {
 
   return (
     
-    <Flex flexDirection='column' pt={{ base: "120px", md: "75px" }}>
-      <SimpleGrid columns={{ sm: 1, md: 2, xl: 4 }} spacing='24px'>
-        <MiniStatistics
-          title={"Today Sell"}
-          amount={"$53,000"}
-          percentage={55}
-          icon={<WalletIcon h={"24px"} w={"24px"} color={iconBoxInside} />}
-        />
-        <MiniStatistics
-          title={"Today Purchase"}
-          amount={"2,300"}
-          percentage={5}
-          icon={<GlobeIcon h={"24px"} w={"24px"} color={iconBoxInside} />}
-        />
-        <MiniStatistics
-          title={"Today Profit"}
-          amount={"+3,020"}
-          percentage={-14}
-          icon={<DocumentIcon h={"24px"} w={"24px"} color={iconBoxInside} />}
-        />
-        <MiniStatistics
-          title={"Remaining Capital"}
-          amount={"$173,000"}
-          percentage={8}
-          icon={<CartIcon h={"24px"} w={"24px"} color={iconBoxInside} />}
-        />
-      </SimpleGrid>
-      <Grid
-        templateColumns={{ sm: "1fr", lg: "1.3fr 1.7fr" }}
-        templateRows={{ sm: "repeat(2, 1fr)", lg: "1fr" }}
-        gap='24px'
-        mb={{ lg: "26px" }}
-        style={{'padding': '2rem 0'}}
-        >
-          <Card style={{'padding': '2rem', width:'100%'}}>
+   
+          <Card style={{'padding': '2rem', width:'100%', 'margin-top': '5rem'}}>
             <CardBody style={{width:'100%'}}>
               <Box style={{width:'100%'}}>
                 <Text style={{"fontWeight": "bold",'marginBottom':'2rem'}}>ADD Currency Record</Text>
@@ -126,6 +75,13 @@ export default function Dashboard() {
                 </FormControl>
                 <FormControl isRequired as='fieldset' style={{'marginBottom': '1rem'}}>
                 <FormLabel>Payment Method</FormLabel>
+                <Select>
+                    <option value="sell">Sell</option>
+                    <option value="purchase" selected>Purchase</option>
+                  </Select>
+                </FormControl>
+                <FormControl isRequired as='fieldset' style={{'marginBottom': '1rem'}}>
+                <FormLabel>Payment</FormLabel>
                   <RadioGroup onChange={handlePayment} value={paymentMethod}>
                     <HStack spacing='24px'>
                       <Radio value='cash'>Cash</Radio>
@@ -167,23 +123,6 @@ export default function Dashboard() {
               </Box>
             </CardBody>
           </Card>
-        <ActiveUsers
-          title={"Monthly Sales in PKR"}
-          percentage={23}
-          chart={<BarChart />}
-        />
-        <SalesOverview
-          title={"Monthly Profit"}
-          percentage={5}
-          chart={<LineChart />}
-        />
-         <Transactions
-          title={"Your Transactions"}
-          date={"23 - 30 March"}
-          newestTransactions={newestTransactions}
-        />
-      </Grid>
-      <Currency></Currency>
-    </Flex>
+      
   );
 }
