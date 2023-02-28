@@ -15,11 +15,14 @@ import {
     FormControl,
     FormLabel,
 } from '@chakra-ui/react'
+import Card from 'components/Card/Card'
+import CardBody from 'components/Card/CardBody'
 import React from 'react'
 
 export default function Expences() {
   return (
-    <div style={{marginTop:'6rem'}}>
+    <Card style={{marginTop:'5rem'}}>
+    <CardBody style={{display:'block'}}>
     <Flex justifyContent={'space-between'} alignItems={'center'}>
               <Text style={{fontWeight: 'bold', fontSize:'large'}}>
                 Expenses Summary
@@ -83,6 +86,7 @@ export default function Expences() {
               </Tbody>
             </Table>
           </TableContainer>
-    </div>
+    </CardBody>
+    </Card>
   )
 }

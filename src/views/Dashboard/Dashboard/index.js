@@ -27,8 +27,10 @@ import React, { useState } from 'react';
 
 export default function Dashboard() {
   const iconBoxInside = useColorModeValue("white", "white");
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const handlePayment = (e) => setPaymentMethod(e)
+  const [payment, setPayment] = useState('cash');
+  const [paymentMethod, setPaymentMethod] = useState('sell');
+  const handlePayment = (e) => setPayment(e)
+  const handlePaymentMethod = (e) => setPaymentMethod(e)
 
   return (
     
@@ -75,24 +77,24 @@ export default function Dashboard() {
                 </FormControl>
                 <FormControl isRequired as='fieldset' style={{'marginBottom': '1rem'}}>
                 <FormLabel>Payment Method</FormLabel>
-                <Select>
+                <Select onChange={handlePaymentMethod} value={paymentMethod}>
                     <option value="sell">Sell</option>
                     <option value="purchase" selected>Purchase</option>
                   </Select>
                 </FormControl>
-                <FormControl isRequired as='fieldset' style={{'marginBottom': '1rem'}}>
+                <FormControl as='fieldset' style={{'marginBottom': '1rem'}}>
                 <FormLabel>Payment</FormLabel>
-                  <RadioGroup onChange={handlePayment} value={paymentMethod}>
+                  <RadioGroup onChange={handlePayment} value={payment}>
                     <HStack spacing='24px'>
                       <Radio value='cash'>Cash</Radio>
                       <Radio value='pending'>Pending</Radio>
                     </HStack>
                   </RadioGroup>
                 </FormControl>
-                {paymentMethod === 'pending' && 
+                {payment === 'pending' && 
                 <>
                 <FormControl isRequired style={{'marginBottom': '1rem'}}>
-                  <FormLabel>Receiving Amount</FormLabel>
+                  {paymentMethod === 'sell' ? <FormLabel>Receiving Amount</FormLabel>:<FormLabel>Returning Amount</FormLabel>}
                   <NumberInput max={50} min={10}>
                     <NumberInputField/>
                     <NumberInputStepper>
