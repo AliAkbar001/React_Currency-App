@@ -89,6 +89,7 @@ export default function ManageUsers() {
         <Th>NO#</Th>
         <Th>Users</Th>
         <Th>Payment</Th>
+        <Th>Amount</Th>
         <Th>Date</Th>
         <Th>Summary</Th>
       </Tr>
@@ -100,6 +101,9 @@ export default function ManageUsers() {
         <Td>
             <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
         </Td>
+        <Td>
+          -
+        </Td>
         <Td>7/12/2023 10:30AM</Td>
         <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary')}><ViewIcon boxSize={6} /></Td>
       </Tr>
@@ -108,6 +112,9 @@ export default function ManageUsers() {
         <Td>Ali</Td>
         <Td>
             <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
+        </Td>
+        <Td>
+          -
         </Td>
         <Td>2/12/2023 3:30PM</Td>
         <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary')}><ViewIcon boxSize={6} /></Td>
@@ -118,6 +125,9 @@ export default function ManageUsers() {
         <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('alert')}>
             <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
         </Td>
+        <Td isNumeric>
+          19000 RS
+        </Td>
         <Td>15/10/2023 2:00PM</Td>
         <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary')}><ViewIcon boxSize={6} /></Td>
       </Tr>
@@ -126,6 +136,9 @@ export default function ManageUsers() {
         <Td>Faraz</Td>
         <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('alert')}>
             <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge>
+        </Td>
+        <Td isNumeric>
+          25000 RS
         </Td>
         <Td>15/10/2023 2:00PM</Td>
         <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary')}><ViewIcon boxSize={6} /></Td>
@@ -148,7 +161,7 @@ export default function ManageUsers() {
           <AlertDialogHeader>Pay Debt?</AlertDialogHeader>
           <AlertDialogCloseButton/>
           <AlertDialogBody>
-            <Text style={{width: '100%', display:'flex', justifyContent:'space-between'}}><span style={{'fontWeight': 'bold'}}>Total Debt</span> <span style={{'fontWeight': '500'}}>19000PKR</span></Text>
+            <Text style={{width: '100%', display:'flex', justifyContent:'space-between'}}><span style={{'fontWeight': 'bold'}}>Total Debt</span> <span style={{'fontWeight': '500'}}>19000 RS</span></Text>
             <FormControl isRequired style={{'marginTop': '1rem'}}>
                   <FormLabel>Enter Amount</FormLabel>
                   <NumberInput min={1}>
