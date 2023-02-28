@@ -95,6 +95,9 @@ export default function Transactions() {
           <p>Profit: 0</p> */}
           </div>
           <Divider orientation='horizontal' />
+          <Card style={{margin:'1rem 0'}}>
+            <CardBody>
+              <div style={{width:'100%'}}>
           <Flex justifyContent={'space-between'} alignItems={'center'} style={{paddingTop:'2rem'}}>
               <Text style={{fontWeight: 'bold', fontSize:'large'}}>
                   Transactions
@@ -175,6 +178,9 @@ export default function Transactions() {
               </Tbody>
             </Table>
           </TableContainer>
+          </div>
+          </CardBody>
+          </Card>
     </div>
   )
 }
