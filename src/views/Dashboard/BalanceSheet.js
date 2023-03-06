@@ -18,6 +18,7 @@ import {
   Stat,
   StatLabel,
   StatNumber,
+  Select,
   StatHelpText,
   StatArrow,
   StatGroup,
@@ -27,7 +28,7 @@ import { SearchIcon } from '@chakra-ui/icons'
 import Card from 'components/Card/Card'
 import CardBody from 'components/Card/CardBody'
 
-export default function Transactions() {
+export default function BalanceSheet() {
   return (
     <div style={{marginTop:'6rem'}}>
       <div>
@@ -36,6 +37,15 @@ export default function Transactions() {
                 Summary
               </Text>
             <Flex justifyContent={'space-between'} alignItems={'end'} gap={'0.5rem'}>
+              <FormControl>
+                  <FormLabel>Currency</FormLabel>
+                  <Select style={{width:'150px'}}>
+                    <option value="all" selected>All</option>
+                    <option value="USD">USD</option>
+                    <option value="PKR">PKR</option>
+                    <option value="AUD">AUD</option>
+                  </Select>
+                </FormControl>  
               <FormControl>
               <FormLabel>Start Date</FormLabel>
               <Input type='datetime-local'/>
@@ -81,6 +91,10 @@ export default function Transactions() {
               <Stat>
                 <StatLabel>Expenses</StatLabel>
                 <StatNumber>345,670</StatNumber>
+              </Stat>
+              <Stat>
+                <StatLabel>Total Transactions</StatLabel>
+                <StatNumber>345</StatNumber>
               </Stat>
             </CardBody>
           </Card>

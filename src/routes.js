@@ -15,7 +15,7 @@ import ManageCurrency from "views/Dashboard/ManageCurrency";
 import Statistics from "views/Dashboard/Statistics";
 import Expenses from "views/Dashboard/Expenses";
 import Currency from "views/Dashboard/Dashboard/components/Currency";
-import Transactions from "views/Dashboard/Transactions";
+import BalanceSheet from "views/Dashboard/BalanceSheet";
 
 var dashRoutes = [
   {
@@ -50,11 +50,11 @@ var dashRoutes = [
     layout: "/admin",
   },
   {
-    path: "/transactions",
-    name: "Transactions",
+    path: "/balance-sheet",
+    name: "Balance Sheet",
     icon: <StatsIcon color="inherit" />,
     secondaryNavbar: true,
-    component: Transactions,
+    component: BalanceSheet,
     layout: "/admin",
   },
   // {

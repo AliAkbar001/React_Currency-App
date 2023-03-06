@@ -1,0 +1,1 @@
+export const url_path = 'http://localhost:3001/api'
