@@ -38,18 +38,51 @@ import {
     NumberInputStepper,
     NumberIncrementStepper,
     NumberDecrementStepper,
+    useToast
 } from '@chakra-ui/react'
+import axios from 'axios'
 import Card from 'components/Card/Card'
 import CardBody from 'components/Card/CardBody'
 import { PersonIcon } from 'components/Icons/Icons'
 import React from 'react'
 import { useState } from 'react'
+import { url_path } from 'views/constants'
 import './style.css'
 export default function ManageUsers() {
   const { isOpen, onOpen, onClose} = useDisclosure()
   const [disclosureType, setDisclosureType] = useState('');
+  const [newUser, setNewUsername] = useState('');
+  const [validation, setValidation] = useState({msg:''});
   const cancelRef = React.useRef()
+  const toast = useToast()
 
+  const handleSubmit = ()=>{
+    const nameRegex = /^[a-zA-Z0-9_-]+$/
+    if(newUser.length < 4 || !nameRegex.test(newUser)){
+      setValidation({msg:'The username must contain at least 4 characters Valid characters are A-Z, a-z, 0-9, (_)underscore, (-) hyphen and unicode characters'})
+    }else{
+      setValidation({msg:''})
+      const data = {
+        username: newUser,
+        transactions: [],
+        created_at: new Date()
+      }
+      axios.post(`${url_path}/users`, data).then(response => {
+        if(response.data.error === 0 && response.data.acknowledged){
+          onClose()
+          toast({
+            title: 'New user ' + newUser + ' create successfully.',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+          })
+          setNewUsername('')
+        }else{
+          setValidation({msg:response.data.msg})
+        }
+      })
+    }
+  }
     function ToggleDisclosure(type){
       setDisclosureType(type)
       onOpen()
@@ -295,11 +328,12 @@ export default function ManageUsers() {
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel>User Name</FormLabel>
-              <Input placeholder='First name' />
+              <Input placeholder='Full name' value={newUser} onChange={(e)=>setNewUsername(e.target.value)}/>
+              {validation.msg !== '' && <small style={{color:'red'}}>{validation.msg}</small>}
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme='blue' mr={3}>
+            <Button colorScheme='blue' mr={3} onClick={handleSubmit}>
               Save
             </Button>
             <Button onClick={onClose}>Cancel</Button>

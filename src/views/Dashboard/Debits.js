@@ -19,7 +19,7 @@ import Card from 'components/Card/Card'
 import CardBody from 'components/Card/CardBody'
 import React from 'react'
 
-export default function Expences() {
+export default function Debits() {
   return (
     <Card style={{marginTop:'5rem'}}>
     <CardBody style={{display:'block'}}>
@@ -93,3 +93,4 @@ export default function Expences() {
     </Card>
   )
 }
+

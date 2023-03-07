@@ -14,17 +14,10 @@ import {
   useDisclosure,
   FormControl,
   FormLabel,
-  Select,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  Radio,
-  HStack,
-  RadioGroup,
   Input,
+  useToast,
 } from "@chakra-ui/react";
+import axios from "axios";
 
 // Custom Icons
 import { ProfileIcon } from "components/Icons/Icons";
@@ -34,18 +27,57 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import routes from "routes.js";
+import { url_path } from "views/constants";
 
 export default function HeaderLinks(props) {
   const { variant, children, fixed, secondary, ...rest } = props;
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure()
   let navbarIcon = useColorModeValue("gray.500", "gray.200");
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const handlePayment = (e) => setPaymentMethod(e)
   if (secondary) {
     navbarIcon = "gray";
   }
-  const settingsRef = React.useRef();
+
+  const [expenses, setExpenses] = useState({
+    name: '',
+    amount: 0
+  });
+  const [validation, setValidation] = useState({name_msg: true, amount_msg: true});
+  const toast = useToast()
+
+  const handleInputChange = event => {
+    const name = event.target.name
+    let value = event.target.value
+    setExpenses({...expenses, [name]: value})
+  };
+
+  const handleSubmit = event => {
+    if(expenses.name === ''){
+      setValidation({...validation, name_msg : false})
+    }else if(parseInt(expenses.amount) < 1){
+      setValidation({...validation, amount_msg: false})
+    }else{
+      setValidation({name_msg: true, amount_msg: true})
+      const data = {
+        name: expenses.name,
+        amount: parseInt(expenses.amount),
+        created_at: new Date()
+      }
+      axios.post(`${url_path}/expenses`, data).then(response => {
+        if(response.data.error === 0 && response.data.acknowledged){
+          onClose()
+          toast({
+            title: 'Expense ' + expenses.name + ' add successfully.',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+          })
+          setExpenses({name: '', amount: 0})
+          onClose()
+        }
+      })
+    }
+  }
   return (
     <>
     <Flex
@@ -101,21 +133,17 @@ export default function HeaderLinks(props) {
           <ModalBody>
           <FormControl isRequired style={{'marginBottom': '1rem'}}>
               <FormLabel>Expense Title</FormLabel>
-              <Input/>
+              <Input name="name" value={expenses.name} onChange={handleInputChange}/>
+              {!validation.name_msg && <small style={{color:'red'}}>Title cannot be empty</small>}
             </FormControl>
             <FormControl isRequired style={{'marginBottom': '1rem'}}>
               <FormLabel>Amount</FormLabel>
-              <NumberInput max={50} min={10}>
-                <NumberInputField/>
-                <NumberInputStepper>
-                  <NumberIncrementStepper/>
-                  <NumberDecrementStepper/>
-                </NumberInputStepper>
-              </NumberInput>
+              <Input name="amount" value={expenses.amount} onChange={handleInputChange}/>
+              {!validation.amount_msg && <small style={{color:'red'}}>Amount cannot be less then 1</small>}
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme='blue' mr={3}>
+            <Button colorScheme='blue' mr={3} onClick={handleSubmit}>
               Add
             </Button>
             <Button variant='ghost' onClick={onClose}>Cancel</Button>

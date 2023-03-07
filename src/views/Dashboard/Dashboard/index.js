@@ -17,6 +17,7 @@ import {
   Radio,
   HStack,
   RadioGroup,
+  useToast,
   useColorModeValue,
   Button,
   Input,
@@ -26,12 +27,13 @@ import Card from "components/Card/Card.js";
 import CardBody from "components/Card/CardBody.js";
 import React, { useState } from 'react';
 import { url_path } from 'views/constants';
+import { useEffect } from 'react';
 
 
 export default function Dashboard() {
   const iconBoxInside = useColorModeValue("white", "white");
   const [formData, setFormData] = useState({
-    username: '0',
+    username: 'Walking',
     currency:'USD',
     currency_amount: 0,
     currency_rate: 0,
@@ -40,15 +42,26 @@ export default function Dashboard() {
     payed_amount: 0,
   })
   const [alertMsg, setAlertMsg] = useState(false)
+  const [usersList, setUsersList] = useState([])
   const [amounts, setAmounts] = useState({
     pending_amount: 0,
     total_amount: 0
   })
-
+  const toast = useToast()
+  
+  useEffect(() => {
+    axios.get(`${url_path}/users`).then(response => setUsersList(response.data));
+  }, [])
+  
   const handleInputChange = event => {
     const name = event.target.name
     let value = event.target.value
-    setFormData({ ...formData, [name]: value})  
+    if(name === 'username' && value === 'Walking'){
+      setFormData({...formData, payment: 'cash', [name]: value}) 
+    }else{
+      setFormData({...formData, [name]: value})  
+
+    }
   };
 
   const handleAmount = event =>{
@@ -68,7 +81,7 @@ export default function Dashboard() {
 
   const handleClear = ()=>{
     setFormData({
-      username: '0',
+      username: 'Walking',
       currency:'USD',
       currency_amount: 0,
       currency_rate: 0,
@@ -111,23 +124,29 @@ export default function Dashboard() {
 
     if(validation){
       setAlertMsg(false)
-        const api = formData.trade === 'sell' ? 'sales' : 'purchases'
-        const data = {
-          username: formData.username,
-          currency: formData.currency,
-          currency_amount: parseInt(formData.currency_amount),
-          currency_rate: parseInt(formData.currency_rate),
-          payment: ((formData.payment === 'pending') && (amounts.total_amount === parseInt(formData.payed_amount))) ? 'cash' : formData.payment,
-          payed_amount: formData.payment === 'cash' ? amounts.total_amount :parseInt(formData.payed_amount),
-          pending_amount: amounts.pending_amount,
-          total_amount: amounts.total_amount
+      const api = formData.trade === 'sell' ? 'sales' : 'purchases'
+      const data = {
+        username: formData.username,
+        currency: formData.currency,
+        currency_amount: parseInt(formData.currency_amount),
+        currency_rate: parseInt(formData.currency_rate),
+        payment: ((formData.payment === 'pending') && (amounts.total_amount === parseInt(formData.payed_amount))) ? 'cash' : formData.payment,
+        payed_amount: formData.payment === 'cash' ? amounts.total_amount :parseInt(formData.payed_amount),
+        pending_amount: amounts.pending_amount,
+        total_amount: amounts.total_amount,
+        created_at: new Date()
+      }
+      axios.post(`${url_path}/${api}`, data).then(response => {
+        if(response.data.acknowledged){
+          toast({
+            title: 'Transaction Complete.',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+          })
         }
-        axios.post(`${url_path}/${api}`, data).then(response => {
-          console.log(response.data);
-          handleClear()
-        }).catch(error => {
-          console.log(error);
-        });
+        handleClear()
+      });
     }
   };
 
@@ -138,10 +157,8 @@ export default function Dashboard() {
           <Text style={{"fontWeight": "bold",'marginBottom':'2rem'}}>ADD Currency Record</Text>
           <FormControl isRequired style={{'marginBottom': '1rem'}}>
             <FormLabel>Select User</FormLabel>
-            <Select placeholder='Select Currency' name="username" value={formData.username} onChange={handleInputChange}>
-              <option value="Walking">Walking</option>
-              <option value="PKR">Ali</option>
-              <option value="AUD">Ahmed</option>
+            <Select name="username" value={formData.username} onChange={handleInputChange}>
+              {usersList.length > 0 ? usersList.map((res)=> <option value={res.username}>{res.username}</option>):<option value="">No User Found</option>}
             </Select>
           </FormControl>
           <FormControl isRequired style={{'marginBottom': '1rem'}}>
@@ -169,14 +186,18 @@ export default function Dashboard() {
           </FormControl>
           <FormControl as='fieldset' style={{'marginBottom': '1rem'}}>
           <FormLabel>Payment</FormLabel>
-            <RadioGroup>
-              <HStack spacing='24px'>
-                <Radio name="payment" onChange={handleInputChange} checked={formData.payment === 'cash'} value='cash'>Cash</Radio>
-                <Radio name="payment" onChange={handleInputChange} checked={formData.payment === 'pending'} disabled={formData.username === 'Walking'} value='pending'>Pending</Radio>
-              </HStack>
-            </RadioGroup>
+            <div style={{display:'flex'}}>
+              <div style={{marginRight: '1rem'}}>
+                <input style={{marginRight: '0.2rem'}} type="radio" name="payment" onChange={handleInputChange} checked={formData.payment === "cash" || formData.username === 'Walking'} value='cash'/>
+                <span>Cash</span>
+              </div>
+              <div>
+                <input style={{marginRight: '0.2rem'}} type="radio" name="payment" onChange={handleInputChange} checked={formData.payment === "pending"} disabled={formData.username === 'Walking'} value='pending'/>
+                <span>Pending</span>
+              </div>
+            </div>  
           </FormControl>
-          {formData.payment === 'pending' && 
+          {(formData.payment === 'pending' && formData.username !== 'Walking') && 
           <>
           <FormControl isRequired style={{'marginBottom': '1rem'}}>
             <FormLabel>Payed Amount</FormLabel>

@@ -18,9 +18,10 @@ let usersCollection;
     });
   });
 
-  app.post('/api/sales', (req, res) => {
+  app.post('/api/sales',(req, res) => {
     const newData = req.body;
-    salesCollection.insertOne(newData, (err, result) => {
+    salesCollection.insertOne(newData, async(err, result) => {
+      await usersCollection.updateOne({ username: req.body.username },{ $push: { transactions: {...newData, trade:'sale'}}})
       res.json(result);
     });
   });
@@ -55,9 +56,9 @@ let usersCollection;
 
   app.post('/api/purchases', (req, res) => {
     const newData = req.body;
-    purchasesCollection.insertOne(newData, (err, result) => {
-      if (err) throw err;
-      res.json(result.ops[0]);
+    purchasesCollection.insertOne(newData, async(err, result) => {
+      await usersCollection.updateOne({ username: req.body.username },{ $push: { transactions: {...newData, trade:'purchase'}}})
+      res.json(result);
     });
   });
 
@@ -99,8 +100,7 @@ let usersCollection;
   app.post('/api/expenses', (req, res) => {
     const newData = req.body;
     expensesCollection.insertOne(newData, (err, result) => {
-      if (err) throw err;
-      res.json(result.ops[0]);
+      res.json({error: 0, acknowledged: result.acknowledged});
     });
   });
 
@@ -124,25 +124,23 @@ let usersCollection;
   });
  
   //Users Api's
-  app.get('/api/usernames', (req, res) => {
-    usersCollection.find({}, {name: 1, _id: 0}).toArray((err, data) => {
-      if (err) throw err;
-      res.json(data);
-    });
+  app.get('/api/users', async(req, res) => {
+    const cursor = usersCollection.find()
+    const result = await cursor.toArray();
+    res.json(result)
   });
 
-  app.get('/api/users', (req, res) => {
-    usersCollection.find().toArray((err, data) => {
-      if (err) throw err;
-      res.json(data);
-    });
-  });
-  app.post('/api/users', (req, res) => {
+  app.post('/api/users', async(req, res) => {
     const newData = req.body;
-    usersCollection.insertOne(newData, (err, result) => {
-      if (err) throw err;
-      res.json(result.ops[0]);
-    });
+    const cursor = usersCollection.find({username: req.body.username})
+    const result = await cursor.toArray();
+    if(result.length === 0){
+      usersCollection.insertOne(newData, (err, result) => {
+        res.json({error: 0, acknowledged: result.acknowledged});
+      });
+    }else{
+      res.json({error: 1, msg:'User already exist'});
+    }
   });
 
   app.put('/api/users/transaction-history', (req, res) => {
