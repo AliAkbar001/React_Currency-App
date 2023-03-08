@@ -15,11 +15,74 @@ import {
     FormControl,
     FormLabel,
 } from '@chakra-ui/react'
+import axios from 'axios'
 import Card from 'components/Card/Card'
 import CardBody from 'components/Card/CardBody'
-import React from 'react'
-
+import React, { useEffect } from 'react'
+import { useState } from 'react'
+import { url_path } from 'views/constants'
+let startD = ''
+let endD = ''
 export default function Expences() {
+  const [expensesBackup, setExpensesBackup] = useState([])
+  const [expenses, setExpenses] = useState([])
+  const [totalExpenses, setTotalExpenses] = useState(0)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+
+  useEffect(() => {
+    axios.get(`${url_path}/expenses`).then(response => {
+      let sum = 0
+      response.data.map((res)=> sum = sum + res.amount)
+      setTotalExpenses(sum)
+      setExpenses(response.data)
+      setExpensesBackup(response.data)
+    });
+  }, [])
+
+  const filterExpenses = (event)=>{
+    const value = event.target.value
+    if(value === ''){
+      setExpenses(expensesBackup)
+    }else{
+      const data =  expensesBackup.filter((e)=>{
+        return JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) > -1 
+      })
+      setExpenses(data)
+    }
+  }
+
+  const handleDateRange = (event)=>{
+    const value = event.target.value
+    const name = event.target.name
+    if(name === 'startDate'){
+      setStartDate(value)
+      startD = value
+      handleDateRangeData()
+    }else if(name === 'endDate'){
+      setEndDate(value)
+      endD = value
+      handleDateRangeData()
+    }
+  }
+
+  const handleDateRangeData = async()=>{
+    if(startD !== '' && endD !== ''){
+      const start = new Date(startD)
+      const end = new Date(endD)
+      const data = await expensesBackup.filter(item => {
+      const date = new Date(item.created_at);
+        return date >= start && date <= end;
+      });
+      setExpenses(data)
+    }
+  }
+
+  const TimeFormate = (date) =>{
+    let today = new Date(date);
+    today = today.getTime()
+    return new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today)
+  }
   return (
     <Card style={{marginTop:'5rem'}}>
     <CardBody style={{display:'block'}}>
@@ -30,7 +93,7 @@ export default function Expences() {
     <Flex justifyContent={'space-between'} alignItems={'end'} gap={'0.5rem'}>
       <FormControl>
         <FormLabel>Search Expense</FormLabel>
-        <InputGroup>
+        <InputGroup onChange={filterExpenses}>
           <InputLeftElement
             pointerEvents='none'
             children={<SearchIcon color='gray.300' />}
@@ -40,16 +103,16 @@ export default function Expences() {
       </FormControl>
       <FormControl>
       <FormLabel>Start Date</FormLabel>
-      <Input type='datetime-local'/>
+      <Input type='datetime-local' name="startDate" value={startDate} onChange={handleDateRange}/>
       </FormControl>
       <FormControl>
         <FormLabel>End Date</FormLabel>
-        <Input type='datetime-local'/>
+        <Input type='datetime-local' name="endDate" value={endDate} min={startDate} onChange={handleDateRange}/>
       </FormControl>
     </Flex>
   </Flex>
   <Text style={{margin:'2rem 0',  background: '#e28743', padding: '1rem', borderRadius: '10px'}}>Total Expenses 
-    <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>0 PKR</span>
+    <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{totalExpenses} PKR</span>
   </Text>
   <TableContainer style={{width: '100%', marginTop:'2rem'}}>
     <Table variant='simple'>
@@ -62,30 +125,16 @@ export default function Expences() {
         </Tr>
       </Thead>
       <Tbody>
+        {expenses.length > 0 ? 
+        expenses.slice(0).reverse().map((res, index)=>
         <Tr style={{cursor:'default'}}>
-          <Td>1</Td>
-          <Td>2/12/2023 3:30PM</Td>
-          <Td>Bill</Td>
-          <Td isNumeric>
-              20000 RS
-          </Td>
-        </Tr>
-        <Tr style={{cursor:'default'}}>
-          <Td>2</Td>
-          <Td>3/10/2023 6:30PM</Td>
-          <Td>Tea</Td>
-          <Td isNumeric>
-              20000 RS
-          </Td>
-        </Tr>
-        <Tr style={{cursor:'default'}}>
-          <Td>3</Td>
-          <Td>2/12/2023 5:30PM</Td>
-          <Td>Food</Td>
-          <Td isNumeric>
-              20000 RS
-          </Td>
-        </Tr>
+        <Td>{index + 1}</Td>
+        <Td>{TimeFormate(res.created_at)}</Td>
+        <Td>{res.name}</Td>
+        <Td isNumeric>{res.amount} PKR</Td>
+      </Tr>):<Tr>
+            <Td colspan="4">No Data Found</Td>
+        </Tr>}
       </Tbody>
     </Table>
   </TableContainer>

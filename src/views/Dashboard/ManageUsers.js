@@ -44,17 +44,32 @@ import axios from 'axios'
 import Card from 'components/Card/Card'
 import CardBody from 'components/Card/CardBody'
 import { PersonIcon } from 'components/Icons/Icons'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { url_path } from 'views/constants'
 import './style.css'
+let startD = ''
+let endD = ''
 export default function ManageUsers() {
   const { isOpen, onOpen, onClose} = useDisclosure()
   const [disclosureType, setDisclosureType] = useState('');
   const [newUser, setNewUsername] = useState('');
   const [validation, setValidation] = useState({msg:''});
+  const [usersList, setUsersList] = useState([])
+  const [usersListBackup, setUsersListBackup] = useState([])
+  const [userTransactions, setUserTransactions] = useState(null)
+  const [selectedUserIndex, setSelectedUserIndex] = useState(null)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const cancelRef = React.useRef()
   const toast = useToast()
+  
+  useEffect(() => {
+    axios.get(`${url_path}/users`).then(response => {
+      setUsersList(response.data)
+      setUsersListBackup(response.data)
+    });
+  }, [newUser])
 
   const handleSubmit = ()=>{
     const nameRegex = /^[a-zA-Z0-9_-]+$/
@@ -83,9 +98,82 @@ export default function ManageUsers() {
       })
     }
   }
-    function ToggleDisclosure(type){
-      setDisclosureType(type)
-      onOpen()
+    function ToggleDisclosure(type, index){
+      if(index !== null){
+        if(usersList[index].transactions.length > 0){
+          setUserTransactions(usersList[index].transactions)
+          setSelectedUserIndex(index)
+          setDisclosureType(type)
+          onOpen()
+        }else{
+          toast({
+            title: 'No Transaction Found',
+            status: 'info',
+            duration: 5000,
+            isClosable: true,
+          })
+        }    
+      }else{
+        setDisclosureType(type)
+        onOpen()
+      }
+      
+    }
+
+    const filterUsers = (event)=>{
+      const value = event.target.value
+      if(value === ''){
+        setUsersList(usersListBackup)
+      }else{
+        const data =  usersListBackup.filter((e)=>{
+          return JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) > -1 
+        })
+        setUsersList(data)
+      }
+    }
+
+    const filterTransactions = (event)=>{
+      const value = event.target.value
+      if(value === ''){
+        setUserTransactions(usersList[selectedUserIndex].transactions)
+      }else{
+        const data =  usersList[selectedUserIndex].transactions.filter((e)=>{
+          return JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) > -1 
+        })
+        setUserTransactions(data)
+      }
+    }
+
+    const handleDateRange = (event)=>{
+      const value = event.target.value
+      const name = event.target.name
+      if(name === 'startDate'){
+        setStartDate(value)
+        startD = value
+        handleDateRangeData()
+      }else if(name === 'endDate'){
+        setEndDate(value)
+        endD = value
+        handleDateRangeData()
+      }
+    }
+
+    const handleDateRangeData = async()=>{
+      if(startD !== '' && endD !== ''){
+        const start = new Date(startD)
+        const end = new Date(endD)
+        const data = await usersList[selectedUserIndex].transactions.filter(item => {
+        const date = new Date(item.created_at);
+          return date >= start && date <= end;
+        });
+        setUserTransactions(data)
+      }
+    }
+
+    const TimeFormate = (date) =>{
+      let today = new Date(date);
+      today = today.getTime()
+      return new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today)
     }
 
   return (
@@ -96,7 +184,7 @@ export default function ManageUsers() {
               <Text style={{fontWeight: 'bold', fontSize:'large'}}>Users</Text>
               <Flex>
               <Stack spacing={4} alignItems={'center'}>
-              <InputGroup>
+              <InputGroup onChange={filterUsers}>
                 <InputLeftElement
                   pointerEvents='none'
                   children={<SearchIcon color='gray.300' />}
@@ -104,15 +192,7 @@ export default function ManageUsers() {
                 <Input type='tel' placeholder='Search Here' />
               </InputGroup>
             </Stack>
-            <FormControl as='fieldset' style={{marginLeft:'1rem', width:'200px'}}>
-                <Select>
-                    <option value="all" selected>All</option>
-                    <option value="debts">Debts</option>
-                    <option value="pending">Pending</option>
-                    <option value="complete">Complete</option>
-                </Select>
-              </FormControl>
-            <Button onClick={()=>ToggleDisclosure('new-user')} style={{marginLeft:'1rem', width:'200px'}}><PersonIcon/>New User</Button>
+            <Button onClick={()=>ToggleDisclosure('new-user', null)} style={{marginLeft:'1rem', width:'200px'}}><PersonIcon/>New User</Button>
             </Flex>
           </Flex>
         <TableContainer style={{width: '100%', marginTop:'2rem'}}>
@@ -121,61 +201,40 @@ export default function ManageUsers() {
       <Tr>
         <Th>NO#</Th>
         <Th>Users</Th>
+        <Th>Created At</Th>
+        <Th>Trade</Th>
         <Th>Payment</Th>
         <Th>Amount</Th>
-        <Th>Date</Th>
+        <Th>Currency</Th>
+        <Th>Transaction Date</Th>
         <Th>Summary</Th>
       </Tr>
     </Thead>
     <Tbody>
-      <Tr style={{cursor:'default'}}>
-        <Td>1</Td>
-        <Td>Walking</Td>
-        <Td>
-            <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
-        </Td>
-        <Td>
-          -
-        </Td>
-        <Td>7/12/2023 10:30AM</Td>
-        <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary')}><ViewIcon boxSize={6} /></Td>
-      </Tr>
-      <Tr style={{cursor:'default'}}>
-        <Td>2</Td>
-        <Td>Ali</Td>
-        <Td>
-            <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
-        </Td>
-        <Td>
-          -
-        </Td>
-        <Td>2/12/2023 3:30PM</Td>
-        <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary')}><ViewIcon boxSize={6} /></Td>
-      </Tr>
-      <Tr style={{cursor:'default'}}>
-        <Td>3</Td>
-        <Td>Ahmed</Td>
-        <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('alert')}>
-            <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
-        </Td>
-        <Td isNumeric>
-          19000 RS
-        </Td>
-        <Td>15/10/2023 2:00PM</Td>
-        <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary')}><ViewIcon boxSize={6} /></Td>
-      </Tr>
-      <Tr style={{cursor:'default'}}>
-        <Td>4</Td>
-        <Td>Faraz</Td>
-        <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('alert')}>
-            <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge>
-        </Td>
-        <Td isNumeric>
-          25000 RS
-        </Td>
-        <Td>15/10/2023 2:00PM</Td>
-        <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary')}><ViewIcon boxSize={6} /></Td>
-      </Tr>
+      {
+        usersList.length > 0 ? usersList.slice(0).reverse().map((res, index) =>
+        <Tr style={{cursor:'default'}}>
+          <Td>{index + 1}</Td>
+          <Td>{res.username}</Td>
+          <Td>{TimeFormate(res.created_at)}</Td>
+          <Td>
+            {res.transactions.length === 0 ? '-' : (res.transactions[res.transactions.length - 1].trade === 'sale' ? <Badge variant='solid' colorScheme='green'>Sell</Badge>:<Badge variant='solid' colorScheme='yellow'>Purchase</Badge>)}
+          </Td>
+          <Td>
+            {res.transactions.length === 0 ? '-' : (
+              res.transactions[res.transactions.length - 1].payment === 'cash' ? <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge> : (
+                res.transactions[res.transactions.length - 1].trade === 'sale' ? <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge> : <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
+              )
+            )}
+          </Td>
+          <Td>{res.transactions.length === 0 ? '-' : res.transactions[res.transactions.length - 1].total_amount + ' PKR'}</Td>
+          <Td>{res.transactions.length === 0 ? '-' : res.transactions[res.transactions.length - 1].currency}</Td>
+          <Td>{res.transactions.length === 0 ? '-' : TimeFormate(res.transactions[res.transactions.length - 1].created_at)}</Td>
+          <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary', index)}><ViewIcon boxSize={6} /></Td>
+        </Tr> ) : <Tr>
+            <Td colspan="9">No Data Found</Td>
+        </Tr>
+      }
     </Tbody>
   </Table>
 </TableContainer>
@@ -224,12 +283,12 @@ export default function ManageUsers() {
           <ModalHeader>
           <Flex justifyContent={'space-between'} alignItems={'center'}>
               <Text style={{fontWeight: 'bold', fontSize:'large'}}>
-                User Summary
+                {usersList[selectedUserIndex].username} Summary
               </Text>
             <Flex justifyContent={'space-between'} alignItems={'end'} gap={'0.5rem'}>
               <FormControl>
-                <FormLabel>Search User</FormLabel>
-                <InputGroup>
+                <FormLabel>Search Transactions</FormLabel>
+                <InputGroup onChange={filterTransactions}>
                   <InputLeftElement
                     pointerEvents='none'
                     children={<SearchIcon color='gray.300' />}
@@ -239,11 +298,11 @@ export default function ManageUsers() {
               </FormControl>
               <FormControl>
               <FormLabel>Start Date</FormLabel>
-              <Input type='datetime-local'/>
+              <Input type='datetime-local' name="startDate" value={startDate} onChange={handleDateRange}/>
               </FormControl>
               <FormControl>
                 <FormLabel>End Date</FormLabel>
-                <Input type='datetime-local'/>
+                <Input type='datetime-local' name="endDate" value={endDate} min={startDate} onChange={handleDateRange}/>
               </FormControl>
             </Flex>
           </Flex>
@@ -255,57 +314,33 @@ export default function ManageUsers() {
               <Thead>
                 <Tr>
                   <Th>NO#</Th>
-                  <Th>Date</Th>
-                  <Th>Currency</Th>
+                  <Th>Trade</Th>
                   <Th>Payment</Th>
-                  <Th>Payment Method</Th>
-                  <Th isNumeric>Amount</Th>
+                  <Th>Debit/Pending</Th>
+                  <Th>Amount</Th>
+                  <Th>Currency</Th>
+                  <Th>Transaction Date</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                <Tr style={{cursor:'default'}}>
-                  <Td>1</Td>
-                  <Td>2/12/2023 3:30PM</Td>
-                  <Td>EUR</Td>
-                  <Td>
-                    <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
-                  </Td>
-                  <Td>
-                    <Badge variant='solid' colorScheme='green'>Sell</Badge>
-                  </Td>
-                  <Td isNumeric>
-                      20000 RS
-                  </Td>
-                </Tr>
-                <Tr style={{cursor:'default'}}>
-                  <Td>2</Td>
-                  <Td>3/10/2023 6:30PM</Td>
-                  <Td>AUD</Td>
-                  <Td>
-                    <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge>
-                  </Td>
-                  <Td>
-                    <Badge variant='solid' colorScheme='yellow'>Purchase</Badge>
-                  </Td>
-                 
-                  <Td isNumeric>
-                      20000 RS
-                  </Td>
-                </Tr>
-                <Tr style={{cursor:'default'}}>
-                  <Td>3</Td>
-                  <Td>2/12/2023 5:30PM</Td>
-                  <Td>USD</Td>
-                  <Td>
-                    <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
-                  </Td>
-                  <Td>
-                    <Badge variant='solid' colorScheme='green'>Sell</Badge>
-                  </Td>
-                  <Td isNumeric>
-                      20000 RS
-                  </Td>
-                </Tr>
+                {userTransactions.length > 0 ? userTransactions.slice(0).reverse().map((res, index) =>
+                  <Tr style={{cursor:'default'}}>
+                    <Td>{index + 1}</Td>
+                    <Td>{res.trade === 'sale' ? <Badge variant='solid' colorScheme='green'>Sell</Badge>:<Badge variant='solid' colorScheme='yellow'>Purchase</Badge>}</Td>
+                    <Td>{res.payment === 'cash' ? <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge> : (
+                          res.trade === 'sale' ? <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge> : <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
+                        )}
+                    </Td>
+                    <Td>{res.pending_amount + ' PKR'}</Td>
+                    <Td>
+                      {res.total_amount + ' PKR'}
+                    </Td>
+                    <Td>{res.currency}</Td>
+                    <Td>{TimeFormate(res.created_at)}</Td>
+                  </Tr> 
+                  ): <Tr>
+                  <Td colspan="7">No Data Found</Td>
+              </Tr>}
               </Tbody>
             </Table>
           </TableContainer>

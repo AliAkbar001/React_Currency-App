@@ -90,11 +90,10 @@ let usersCollection;
   });
 
   //ExpensesAPI's
-  app.get('/api/expenses', (req, res) => {
-    expensesCollection.find().toArray((err, data) => {
-      if (err) throw err;
-      res.json(data);
-    });
+  app.get('/api/expenses', async(req, res) => {
+    const cursor = expensesCollection.find()
+    const result = await cursor.toArray();
+    res.json(result)
   });
 
   app.post('/api/expenses', (req, res) => {
@@ -143,6 +142,15 @@ let usersCollection;
     }
   });
 
+  app.post('/api/users/date-range', async(req, res) => {
+    const cursor = usersCollection.find({ 'transactions.created_at': {
+          $gte: ISODate(req.body.start),
+          $lte: ISODate(req.body.end)
+        }
+      })
+    const result = await cursor.toArray();
+    res.json(result)
+  });
   app.put('/api/users/transaction-history', (req, res) => {
     const newData = req.body;
     usersCollection.update((
