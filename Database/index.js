@@ -11,11 +11,16 @@ let purchasesCollection;
 let expensesCollection;
 let usersCollection;
   //Complete Transactions API's
-  app.get('/api/sales', (req, res) => {
-    salesCollection.find().toArray((err, data) => {
-      if (err) throw err;
-      res.json(data);
-    });
+  app.get('/api/sales', async(req, res) => {
+    const cursor = salesCollection.find()
+    const result = await cursor.toArray();
+    res.json(result.reverse())
+  });
+
+  app.get('/api/sales/pending', async(req, res) => {
+    const cursor = salesCollection.find({payment:'pending'})
+    const result = await cursor.toArray();
+    res.json(result.reverse())
   });
 
   app.post('/api/sales',(req, res) => {
@@ -47,11 +52,16 @@ let usersCollection;
   });
 
   //Debits API's
-  app.get('/api/purchases', (req, res) => {
-    purchasesCollection.find().toArray((err, data) => {
-      if (err) throw err;
-      res.json(data);
-    });
+  app.get('/api/purchases', async(req, res) => {
+    const cursor = purchasesCollection.find()
+    const result = await cursor.toArray();
+    res.json(result.reverse())
+  });
+
+  app.get('/api/purchases/pending', async(req, res) => {
+    const cursor = purchasesCollection.find({payment:'pending'})
+    const result = await cursor.toArray();
+    res.json(result.reverse())
   });
 
   app.post('/api/purchases', (req, res) => {
@@ -93,7 +103,7 @@ let usersCollection;
   app.get('/api/expenses', async(req, res) => {
     const cursor = expensesCollection.find()
     const result = await cursor.toArray();
-    res.json(result)
+    res.json(result.reverse())
   });
 
   app.post('/api/expenses', (req, res) => {
@@ -126,7 +136,7 @@ let usersCollection;
   app.get('/api/users', async(req, res) => {
     const cursor = usersCollection.find()
     const result = await cursor.toArray();
-    res.json(result)
+    res.json(result.reverse())
   });
 
   app.post('/api/users', async(req, res) => {

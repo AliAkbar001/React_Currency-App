@@ -126,7 +126,7 @@ export default function Expences() {
       </Thead>
       <Tbody>
         {expenses.length > 0 ? 
-        expenses.slice(0).reverse().map((res, index)=>
+        expenses.map((res, index)=>
         <Tr style={{cursor:'default'}}>
         <Td>{index + 1}</Td>
         <Td>{TimeFormate(res.created_at)}</Td>

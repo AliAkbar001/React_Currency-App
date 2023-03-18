@@ -212,7 +212,7 @@ export default function ManageUsers() {
     </Thead>
     <Tbody>
       {
-        usersList.length > 0 ? usersList.slice(0).reverse().map((res, index) =>
+        usersList.length > 0 ? usersList.map((res, index) =>
         <Tr style={{cursor:'default'}}>
           <Td>{index + 1}</Td>
           <Td>{res.username}</Td>
@@ -323,7 +323,7 @@ export default function ManageUsers() {
                 </Tr>
               </Thead>
               <Tbody>
-                {userTransactions.length > 0 ? userTransactions.slice(0).reverse().map((res, index) =>
+                {userTransactions.length > 0 ? userTransactions.map((res, index) =>
                   <Tr style={{cursor:'default'}}>
                     <Td>{index + 1}</Td>
                     <Td>{res.trade === 'sale' ? <Badge variant='solid' colorScheme='green'>Sell</Badge>:<Badge variant='solid' colorScheme='yellow'>Purchase</Badge>}</Td>
