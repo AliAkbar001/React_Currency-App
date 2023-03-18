@@ -14,6 +14,15 @@ import {
     Input,
     FormControl,
     FormLabel,
+    ModalOverlay,
+    ModalContent,
+    ModalCloseButton,
+    ModalBody,
+    useDisclosure,
+    ModalFooter,
+    Button,
+    ModalHeader,
+    Modal,
 } from '@chakra-ui/react'
 import axios from 'axios'
 import Card from 'components/Card/Card'
@@ -23,11 +32,15 @@ import { url_path } from 'views/constants'
 let startD = ''
 let endD = ''
 export default function Debits() {
+  const { isOpen, onOpen, onClose} = useDisclosure()
   const [dataBackup, setDataBackup] = useState([])
   const [data, setData] = useState([])
   const [totalAmount, setTotalAmount] = useState(0)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [payment, setPayment] = useState({})
+  const [pendingAmount, setPendingAmount] = useState(0)
+  const [validation, setValidation] = useState({msg:''});
 
   useEffect(() => {
     axios.get(`${url_path}/purchases/pending`).then(response => {
@@ -85,6 +98,27 @@ export default function Debits() {
     }
   }
 
+  function ToggleDisclosure(data){
+    setPayment(data)
+    onOpen()
+  }
+
+  const handleSubmit = ()=>{
+    setPendingAmount(parseInt(pendingAmount))
+    setValidation({msg: ''})
+    if(pendingAmount <= 0){
+      setValidation({msg: 'Minimum pending amount must be 1'})
+    }
+
+    if(pendingAmount > payment.total_amount){
+      setValidation({msg: 'Pending amount cannot be more then total amount'})
+    }
+
+    if(validation.msg === ''){
+
+    }
+  }
+
   return (
     <Card style={{marginTop:'5rem'}}>
     <CardBody style={{display:'block'}}>
@@ -130,7 +164,7 @@ export default function Debits() {
       <Tbody>
       {data.length > 0 ? 
         data.map((res, index)=>
-        <Tr style={{cursor:'default'}}>
+        <Tr style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure(res)}>
         <Td>{index + 1}</Td>
         <Td>{TimeFormate(res.created_at)}</Td>
         <Td>{res.username}</Td>
@@ -142,6 +176,45 @@ export default function Debits() {
       </Tbody>
     </Table>
   </TableContainer>
+  <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+    >
+      <ModalOverlay />
+      <ModalContent>
+          <ModalHeader>Pay Debit</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <Flex style={{justifyContent:'space-between'}}>
+              <Text style={{fontWeight:'bold'}}>{payment.username}</Text>
+              <Text style={{fontWeight:'bold'}}>{TimeFormate(payment.created_at)}{'   '}</Text>
+            </Flex>
+          <FormControl style={{margin:'1rem 0'}}>
+              <FormLabel>Enter Amount</FormLabel>
+              <input type='number' className="form-control" min="0" value={pendingAmount} onChange={(e)=>setPendingAmount(e.target.value)}/>
+              {validation.msg !== '' && <small style={{color:'red'}}>{validation.msg}</small>}
+            </FormControl>
+            <Flex style={{marginBottom:'0.5rem',   background: 'red', color:'white', padding: '1rem', borderRadius: '10px', justifyContent:'space-between'}}>
+              <Text>Pending Amount</Text>
+              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.pending_amount} PKR</Text>
+            </Flex>
+            <Flex style={{marginBottom:'0.5rem',  background: 'green', color:'white', padding: '1rem', borderRadius: '10px', justifyContent:'space-between'}}>
+              <Text>Payed Amount</Text>
+              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.payed_amount} PKR</Text>
+            </Flex>
+            <Flex style={{marginBottom:'0.5rem',  background: '#e28743', padding: '1rem', borderRadius: '10px', justifyContent:'space-between'}}>
+              <Text>Total Amount</Text>
+              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.total_amount} PKR</Text>
+            </Flex>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={handleSubmit}>
+              Save
+            </Button>
+            <Button onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+    </Modal>
     </CardBody>
     </Card>
   )

@@ -113,16 +113,16 @@ let usersCollection;
     });
   });
 
-  app.post('/api/expenses/date-range', (req, res) => {
-    expensesCollection.find({
+  app.post('/api/expenses/date-range', async(req, res) => {
+    const cursor = expensesCollection.find({
         "created_at": {
-          $gte: ISODate(req.body.start),
-          $lte: ISODate(req.body.end)
+          $gte: req.body.start,
+          $lte: req.body.end
         }
-      }).toArray((err, data) => {
-        if (err) throw err;
-        res.json(data);
-      });
+      })
+      const result = await cursor.toArray();
+      console.log(result)
+      res.json(result.reverse())
   });
 
   app.post('/api/expenses/search', (req, res) => {

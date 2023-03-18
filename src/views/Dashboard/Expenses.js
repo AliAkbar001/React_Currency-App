@@ -27,8 +27,8 @@ export default function Expences() {
   const [expensesBackup, setExpensesBackup] = useState([])
   const [expenses, setExpenses] = useState([])
   const [totalExpenses, setTotalExpenses] = useState(0)
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startDate, setStartDate] = useState(new Date())
+  const [endDate, setEndDate] = useState(new Date())
 
   useEffect(() => {
     axios.get(`${url_path}/expenses`).then(response => {
@@ -68,13 +68,15 @@ export default function Expences() {
 
   const handleDateRangeData = async()=>{
     if(startD !== '' && endD !== ''){
-      const start = new Date(startD)
-      const end = new Date(endD)
-      const data = await expensesBackup.filter(item => {
-      const date = new Date(item.created_at);
-        return date >= start && date <= end;
-      });
-      setExpenses(data)
+      const date1 = new Date(startD).toISOString()
+      const date2 = new Date(endD).toISOString()
+      axios.post(`${url_path}/expenses/date-range`, {start: date1, end: date2}).then(response => {
+        let sum = 0
+        response.data.map((res)=> sum = sum + res.amount)
+        setTotalExpenses(sum)
+        setExpenses(response.data)
+        setExpensesBackup(response.data)
+      })
     }
   }
 
