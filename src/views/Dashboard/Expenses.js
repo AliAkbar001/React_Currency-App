@@ -23,6 +23,10 @@ import { useState } from 'react'
 import { url_path } from 'views/constants'
 let startD = ''
 let endD = ''
+let today = new Date()
+let month = today.getMonth() > 9 ? (today.getMonth() + 1) : ('0' + (today.getMonth() + 1))
+today = today.getFullYear() + '-' + month + '-' + today.getDate()
+
 export default function Expences() {
   const [expensesBackup, setExpensesBackup] = useState([])
   const [expenses, setExpenses] = useState([])
@@ -31,13 +35,16 @@ export default function Expences() {
   const [endDate, setEndDate] = useState(new Date())
 
   useEffect(() => {
-    axios.get(`${url_path}/expenses`).then(response => {
+    let date1 = new Date(today + ' 00:00');
+    date1 =  new Date(date1).toISOString()
+    const date2 = new Date().toISOString()
+    axios.post(`${url_path}/expenses/date-range`, {start: date1, end: date2}).then(response => {
       let sum = 0
       response.data.map((res)=> sum = sum + res.amount)
       setTotalExpenses(sum)
       setExpenses(response.data)
       setExpensesBackup(response.data)
-    });
+    })
   }, [])
 
   const filterExpenses = (event)=>{
@@ -68,8 +75,8 @@ export default function Expences() {
 
   const handleDateRangeData = async()=>{
     if(startD !== '' && endD !== ''){
-      const date1 = new Date(startD).toISOString()
-      const date2 = new Date(endD).toISOString()
+      const date1 = new Date(startD + ' 00:00').toISOString()
+      const date2 = new Date(endD + ' 24:00').toISOString()
       axios.post(`${url_path}/expenses/date-range`, {start: date1, end: date2}).then(response => {
         let sum = 0
         response.data.map((res)=> sum = sum + res.amount)
@@ -105,16 +112,16 @@ export default function Expences() {
       </FormControl>
       <FormControl>
       <FormLabel>Start Date</FormLabel>
-      <Input type='datetime-local' name="startDate" value={startDate} onChange={handleDateRange}/>
+      <Input type='date' name="startDate" value={startDate} max={today} onChange={handleDateRange}/>
       </FormControl>
       <FormControl>
         <FormLabel>End Date</FormLabel>
-        <Input type='datetime-local' name="endDate" value={endDate} min={startDate} onChange={handleDateRange}/>
+        <Input type='date' name="endDate" value={endDate} min={startDate} max={today} onChange={handleDateRange}/>
       </FormControl>
     </Flex>
   </Flex>
   <Text style={{margin:'2rem 0',  background: '#e28743', padding: '1rem', borderRadius: '10px'}}>Total Expenses 
-    <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{totalExpenses} PKR</span>
+    <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{totalExpenses.toLocaleString()} PKR</span>
   </Text>
   <TableContainer style={{width: '100%', marginTop:'2rem'}}>
     <Table variant='simple'>
@@ -133,7 +140,7 @@ export default function Expences() {
         <Td>{index + 1}</Td>
         <Td>{TimeFormate(res.created_at)}</Td>
         <Td>{res.name}</Td>
-        <Td isNumeric>{res.amount} PKR</Td>
+        <Td isNumeric>{res.amount.toLocaleString()} PKR</Td>
       </Tr>):<Tr>
             <Td colspan="4">No Data Found</Td>
         </Tr>}

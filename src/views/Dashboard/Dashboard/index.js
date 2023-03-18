@@ -204,7 +204,7 @@ export default function Dashboard() {
             <Input min={1} name="payed_amount" value={formData.payed_amount} onChange={handleInputChange} onKeyUpCapture={handleAmount}/>
           </FormControl>
           <Text style={{margin:'2rem 0',  background: '#e28743', padding: '1rem', borderRadius: '10px'}}>Pending Amount 
-            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{amounts.pending_amount} PKR</span>
+            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{amounts.pending_amount.toLocaleString()} PKR</span>
           </Text>
           </>
           }
@@ -217,7 +217,7 @@ export default function Dashboard() {
               </Stack>
               }
           <Text style={{margin:'2rem 0'}}>Total Amount 
-            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{amounts.total_amount} PKR</span>
+            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{amounts.total_amount.toLocaleString()} PKR</span>
           </Text>
           <Flex flexDirection={'row'} justifyContent={"end"}>
             <Button colorScheme='blue' mr={3} onClick={handleSubmit}>Add</Button>

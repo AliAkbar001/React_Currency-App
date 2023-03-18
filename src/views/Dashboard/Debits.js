@@ -23,6 +23,7 @@ import {
     Button,
     ModalHeader,
     Modal,
+    useToast,
 } from '@chakra-ui/react'
 import axios from 'axios'
 import Card from 'components/Card/Card'
@@ -31,6 +32,10 @@ import { useEffect, useState } from 'react'
 import { url_path } from 'views/constants'
 let startD = ''
 let endD = ''
+let today = new Date()
+let month = today.getMonth() > 9 ? (today.getMonth() + 1) : ('0' + (today.getMonth() + 1))
+today = today.getFullYear() + '-' + month + '-' + today.getDate()
+
 export default function Debits() {
   const { isOpen, onOpen, onClose} = useDisclosure()
   const [dataBackup, setDataBackup] = useState([])
@@ -41,8 +46,13 @@ export default function Debits() {
   const [payment, setPayment] = useState({})
   const [pendingAmount, setPendingAmount] = useState(0)
   const [validation, setValidation] = useState({msg:''});
+  const toast = useToast()
 
   useEffect(() => {
+    FetchData()
+  }, [])
+
+  function FetchData(){
     axios.get(`${url_path}/purchases/pending`).then(response => {
       let sum = 0
       response.data.map((res)=> sum = sum + res.pending_amount)
@@ -50,7 +60,7 @@ export default function Debits() {
       setData(response.data)
       setDataBackup(response.data)
     });
-  }, [])
+  }
 
   const filterData = (event)=>{
     const value = event.target.value
@@ -80,13 +90,15 @@ export default function Debits() {
 
   const handleDateRangeData = ()=>{
     if(startD !== '' && endD !== ''){
-      const start = new Date(startD)
-      const end = new Date(endD)
-      const dataTemp = dataBackup.filter(item => {
-      const date = new Date(item.created_at);
-        return date >= start && date <= end;
+      const date1 = new Date(startD + ' 00:00').toISOString()
+      const date2 = new Date(endD + ' 24:00').toISOString()
+      axios.post(`${url_path}/purchases/pending/date-range`, {start: date1, end: date2}).then(response => {
+        let sum = 0
+        response.data.map((res)=> sum = sum + res.pending_amount)
+        setTotalAmount(sum)
+        setData(response.data)
+        setDataBackup(response.data)
       });
-      setData(dataTemp)
     }
   }
 
@@ -106,16 +118,51 @@ export default function Debits() {
   const handleSubmit = ()=>{
     setPendingAmount(parseInt(pendingAmount))
     setValidation({msg: ''})
-    if(pendingAmount <= 0){
+    let check = true
+    if(parseInt(pendingAmount) <= 0){
       setValidation({msg: 'Minimum pending amount must be 1'})
+      check = false
     }
 
-    if(pendingAmount > payment.total_amount){
+    if(parseInt(pendingAmount) > parseInt(payment.total_amount)){
       setValidation({msg: 'Pending amount cannot be more then total amount'})
+      check = false
     }
 
-    if(validation.msg === ''){
-
+    if(check){
+      let obj = {}
+      if(parseInt(pendingAmount) === payment.pending_amount){
+        obj = {
+          username: payment.username,
+          payment: "cash",
+          pending_amount: 0,
+          payed_amount: parseInt(payment.total_amount),
+      }
+      }else{
+        obj = {
+          username: payment.username,
+          pending_amount: parseInt(payment.pending_amount) - parseInt(pendingAmount),
+          payed_amount: parseInt(payment.payed_amount) + parseInt(pendingAmount),
+        }
+      }
+      axios.put(`${url_path}/purchases/pending-payments`, {_id: payment._id, obj}).then(response => {
+        if(response.data.acknowledged){
+          if(startD !== '' && endD !== ''){
+            handleDateRangeData()
+          }else{
+            FetchData()
+          }
+          setPayment({})
+          setPendingAmount(0)
+          onClose()
+          toast({
+            title: payment.username +  ' Debit ' + pendingAmount + ' PKR',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+          })
+        }
+      })
     }
   }
 
@@ -139,16 +186,16 @@ export default function Debits() {
       </FormControl>
        <FormControl>
       <FormLabel>Start Date</FormLabel>
-      <Input type='datetime-local' name="startDate" value={startDate} onChange={handleDateRange}/>
+      <Input type='date' name="startDate" value={startDate} max={today} onChange={handleDateRange}/>
       </FormControl>
       <FormControl>
         <FormLabel>End Date</FormLabel>
-        <Input type='datetime-local' name="endDate" value={endDate} min={startDate} onChange={handleDateRange}/>
+        <Input type='date' name="endDate" value={endDate} min={startDate} max={today} onChange={handleDateRange}/>
       </FormControl>
     </Flex>
   </Flex>
   <Text style={{margin:'2rem 0',  background: '#e28743', padding: '1rem', borderRadius: '10px'}}>Total Payment 
-    <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{totalAmount} PKR</span>
+    <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{totalAmount.toLocaleString()} PKR</span>
   </Text>
   <TableContainer style={{width: '100%', marginTop:'2rem'}}>
     <Table variant='simple'>
@@ -168,8 +215,8 @@ export default function Debits() {
         <Td>{index + 1}</Td>
         <Td>{TimeFormate(res.created_at)}</Td>
         <Td>{res.username}</Td>
-        <Td isNumeric>{res.pending_amount} PKR</Td>
-        <Td isNumeric>{res.total_amount} PKR</Td>
+        <Td isNumeric>{res.pending_amount.toLocaleString()} PKR</Td>
+        <Td isNumeric>{res.total_amount.toLocaleString()} PKR</Td>
       </Tr>):<Tr>
             <Td colspan="5">No Data Found</Td>
         </Tr>}
@@ -196,15 +243,15 @@ export default function Debits() {
             </FormControl>
             <Flex style={{marginBottom:'0.5rem',   background: 'red', color:'white', padding: '1rem', borderRadius: '10px', justifyContent:'space-between'}}>
               <Text>Pending Amount</Text>
-              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.pending_amount} PKR</Text>
+              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.pending_amount !== undefined && payment.pending_amount.toLocaleString()} PKR</Text>
             </Flex>
             <Flex style={{marginBottom:'0.5rem',  background: 'green', color:'white', padding: '1rem', borderRadius: '10px', justifyContent:'space-between'}}>
               <Text>Payed Amount</Text>
-              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.payed_amount} PKR</Text>
+              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.payed_amount !== undefined && payment.payed_amount.toLocaleString()} PKR</Text>
             </Flex>
             <Flex style={{marginBottom:'0.5rem',  background: '#e28743', padding: '1rem', borderRadius: '10px', justifyContent:'space-between'}}>
               <Text>Total Amount</Text>
-              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.total_amount} PKR</Text>
+              <Text style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{payment.total_amount !== undefined && payment.total_amount.toLocaleString()} PKR</Text>
             </Flex>
           </ModalBody>
           <ModalFooter>

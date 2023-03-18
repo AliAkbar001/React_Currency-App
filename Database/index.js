@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-
+const ObjectId = mongoose.Types.ObjectId;
 let salesCollection;
 let purchasesCollection;
 let expensesCollection;
@@ -21,6 +21,18 @@ let usersCollection;
     const cursor = salesCollection.find({payment:'pending'})
     const result = await cursor.toArray();
     res.json(result.reverse())
+  });
+
+  app.post('/api/sales/pending/date-range', async(req, res) => {
+    const cursor = salesCollection.find({
+        payment:'pending',
+        "created_at": {
+          $gte: req.body.start,
+          $lte: req.body.end
+        }
+      })
+      const result = await cursor.toArray();
+      res.json(result.reverse())
   });
 
   app.post('/api/sales',(req, res) => {
@@ -39,19 +51,36 @@ let usersCollection;
       });
   });
 
-  app.post('/api/sales/date-range', (req, res) => {
-    salesCollection.find({
-        "created_at": {
-          $gte: ISODate(req.body.start),
-          $lte: ISODate(req.body.end)
-        }
-      }).toArray((err, data) => {
-        if (err) throw err;
-        res.json(data);
-      });
+  app.post('/api/sales/date-range', async(req, res) => {
+    const cursor = salesCollection.find({
+      "created_at": {
+        $gte: req.body.start,
+        $lte: req.body.end
+      }
+    })
+    const result = await cursor.toArray();
+    res.json(result.reverse())
   });
 
+    app.put('/api/sales/pending-payments', async (req, res) =>{
+    const _id = new ObjectId(req.body._id);
+    const data = {...req.body.obj}
+    salesCollection.updateOne({_id: _id}, {$set:{ ...data}}, (err, result) => {
+      res.json(result);
+    })
+  })
   //Debits API's
+  app.post('/api/purchases/date-range', async(req, res) => {
+    const cursor = purchasesCollection.find({
+      "created_at": {
+        $gte: req.body.start,
+        $lte: req.body.end
+      }
+    })
+    const result = await cursor.toArray();
+    res.json(result.reverse())
+  });
+
   app.get('/api/purchases', async(req, res) => {
     const cursor = purchasesCollection.find()
     const result = await cursor.toArray();
@@ -63,6 +92,26 @@ let usersCollection;
     const result = await cursor.toArray();
     res.json(result.reverse())
   });
+
+  app.post('/api/purchases/pending/date-range', async(req, res) => {
+    const cursor = purchasesCollection.find({
+        payment:'pending',
+        "created_at": {
+          $gte: req.body.start,
+          $lte: req.body.end
+        }
+      })
+      const result = await cursor.toArray();
+      res.json(result.reverse())
+  });
+
+  app.put('/api/purchases/pending-payments', async (req, res) =>{
+    const _id = new ObjectId(req.body._id);
+    const data = {...req.body.obj}
+    purchasesCollection.updateOne({_id: _id}, {$set:{ ...data}}, (err, result) => {
+      res.json(result);
+    })
+  })
 
   app.post('/api/purchases', (req, res) => {
     const newData = req.body;
@@ -87,17 +136,7 @@ let usersCollection;
       });
   });
 
-  app.post('/api/purchases/date-range', (req, res) => {
-    purchasesCollection.find({
-        "created_at": {
-          $gte: ISODate(req.body.start),
-          $lte: ISODate(req.body.end)
-        }
-      }).toArray((err, data) => {
-        if (err) throw err;
-        res.json(data);
-      });
-  });
+
 
   //ExpensesAPI's
   app.get('/api/expenses', async(req, res) => {
@@ -121,7 +160,6 @@ let usersCollection;
         }
       })
       const result = await cursor.toArray();
-      console.log(result)
       res.json(result.reverse())
   });
 
