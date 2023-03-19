@@ -10,6 +10,20 @@ let salesCollection;
 let purchasesCollection;
 let expensesCollection;
 let usersCollection;
+let utilitiesCollection;
+//login
+app.post('/api/login', async(req, res) => {
+  const cursor = utilitiesCollection.find()
+  let result = await cursor.toArray();
+  result = result[0]
+  if(req.body.email === result.email && req.body.password === result.password){
+    res.json({'authentication': true})
+  }else{
+    res.json({'authentication': false})
+  }
+    
+});
+
   //Complete Transactions API's
   app.get('/api/sales', async(req, res) => {
     const cursor = salesCollection.find()
@@ -226,6 +240,7 @@ let usersCollection;
         purchasesCollection = database.collection('purchases');
         expensesCollection = database.collection('expenses');
         usersCollection = database.collection('users');
+        utilitiesCollection = database.collection('utilities');
         console.log('Connected to MongoDB database.');
     });
     database.on('error', (error) => {
