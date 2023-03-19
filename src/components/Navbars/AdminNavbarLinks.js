@@ -78,6 +78,12 @@ export default function HeaderLinks(props) {
       })
     }
   }
+
+  const navigateLogin = () =>{
+    sessionStorage.clear()
+    location.reload()
+  }
+  
   return (
     <>
     <Flex
@@ -89,8 +95,9 @@ export default function HeaderLinks(props) {
       <Button onClick={onOpen} style={{marginRight:'1rem'}}>
       <Text  display={{ sm: "none", md: "flex" }}>Add Expense</Text>
       </Button>
-      <NavLink to="/auth/signin">
+     
         <Button
+        onClick={navigateLogin}
           ms="0px"
           px="0px"
           me={{ sm: "2px", md: "16px" }}
@@ -113,7 +120,7 @@ export default function HeaderLinks(props) {
         >
           <Text display={{ sm: "none", md: "flex" }}>Logout</Text>
         </Button>
-      </NavLink>
+ 
         <Button onClick={toggleColorMode}>
           Theme {colorMode === "light" ? "Dark" : "Light"}
         </Button>

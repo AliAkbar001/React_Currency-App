@@ -18,7 +18,17 @@ import FixedPlugin from '../components/FixedPlugin/FixedPlugin';
 import MainPanel from '../components/Layout/MainPanel';
 import PanelContainer from '../components/Layout/PanelContainer';
 import PanelContent from '../components/Layout/PanelContent';
+import { useEffect } from 'react';
 export default function Dashboard(props) {
+	const [navigate, setNavigate] = useState(false)
+	
+	useEffect(() => {
+	  const token = sessionStorage.getItem("token");
+	  if(token === null || token !== "kjanxklaxlascacshoacuhksahgiwqudgluydgu^&^%&^^TUYufytr75r75r7r555t6765swvou_12u202802180"){
+		setNavigate(true)
+	  }
+	}, [])
+	
 	const { ...rest } = props;
 	// states and functions
 	const [ sidebarVariant, setSidebarVariant ] = useState('transparent');
@@ -87,6 +97,7 @@ export default function Dashboard(props) {
 	// Chakra Color Mode
 	return (
 		<ChakraProvider theme={theme} resetCss={false}>
+			{navigate && <Redirect to='/login' />}
 			<Sidebar
 				routes={routes}
 				logoText={'Side-X-Digital'}

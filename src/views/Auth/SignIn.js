@@ -3,12 +3,20 @@ import { useState } from "react";
 import { url_path } from "views/constants";
 import './style.css'
 import { Redirect } from "react-router-dom";
+import { useEffect } from "react";
 
 function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState(0)
   const [navigate, setNavigate] = useState(false)
+
+  useEffect(() => {
+	  const token = sessionStorage.getItem("token");
+	  if(token !== null && token !== "kjanxklaxlascacshoacuhksahgiwqudgluydgu^&^%&^^TUYufytr75r75r7r555t6765swvou_12u202802180"){
+		  setNavigate(true);
+	  }
+	}, [])
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -17,7 +25,8 @@ function SignIn() {
         setMsg(1)
         setTimeout(() => {
           setNavigate(true);
-        }, 2000);
+        }, 1500);
+        sessionStorage.setItem("token", "kjanxklaxlascacshoacuhksahgiwqudgluydgu^&^%&^^TUYufytr75r75r7r555t6765swvou_12u202802180")
       }else{
         setMsg(2)
       }
