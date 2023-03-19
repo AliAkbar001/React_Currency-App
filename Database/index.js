@@ -21,7 +21,14 @@ app.post('/api/login', async(req, res) => {
   }else{
     res.json({'authentication': false})
   }
-    
+});
+
+//Currency
+app.get('/api/currencies', async(req, res) => {
+  const cursor = utilitiesCollection.find()
+  let result = await cursor.toArray();
+  result = result[0].currrences
+  res.json(result)
 });
 
   //Complete Transactions API's

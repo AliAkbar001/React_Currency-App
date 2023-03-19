@@ -43,6 +43,7 @@ export default function Dashboard() {
   })
   const [alertMsg, setAlertMsg] = useState(false)
   const [usersList, setUsersList] = useState([])
+  const [currencies, setCurrencies] = useState([])
   const [amounts, setAmounts] = useState({
     pending_amount: 0,
     total_amount: 0
@@ -51,6 +52,7 @@ export default function Dashboard() {
   
   useEffect(() => {
     axios.get(`${url_path}/users`).then(response => setUsersList(response.data));
+    axios.get(`${url_path}/currencies`).then(response => setCurrencies(response.data));
   }, [])
   
   const handleInputChange = event => {
@@ -164,9 +166,7 @@ export default function Dashboard() {
           <FormControl isRequired style={{'marginBottom': '1rem'}}>
             <FormLabel>Currency</FormLabel>
             <Select placeholder='Select Currency' name="currency" value={formData.currency} onChange={handleInputChange} >
-              <option value="USD">USD</option>
-              <option value="PKR">PKR</option>
-              <option value="AUD">AUD</option>
+              {currencies.map(data => <option value={data}>{data}</option>)}
             </Select>
           </FormControl>
           <FormControl isRequired style={{'marginBottom': '1rem'}}>
