@@ -2,13 +2,13 @@ import axios from "axios";
 import { useState } from "react";
 import { url_path } from "views/constants";
 import './style.css'
-import { useNavigate } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 
 function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState(0)
-  const navigate = useNavigate();
+  const [navigate, setNavigate] = useState(false)
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -16,7 +16,7 @@ function SignIn() {
       if(response.data.authentication){
         setMsg(1)
         setTimeout(() => {
-          navigate("/");
+          setNavigate(true);
         }, 2000);
       }else{
         setMsg(2)
@@ -26,6 +26,7 @@ function SignIn() {
 
   return (
     <div className="login-form">
+      {navigate && <Redirect from='/login' to='/admin/dashboard' />}
     <form onSubmit={handleSubmit}>
       <h1>Login</h1>
       {msg === 2 && 
