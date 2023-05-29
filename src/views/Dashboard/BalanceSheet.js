@@ -240,7 +240,6 @@ export default function BalanceSheet() {
                   <Th>NO#</Th>
                   <Th>Date</Th>
                   <Th>Username</Th>
-                  <Th>Currency</Th>
                   <Th>Payment</Th>
                   <Th>Payment Method</Th>
                   <Th isNumeric>Total Amount</Th>
@@ -254,7 +253,6 @@ export default function BalanceSheet() {
                 <Td>{index + 1}</Td>
                 <Td>{TimeFormate(res.created_at)}</Td>
                 <Td>{res.username}</Td>
-                <Td>{res.currency}</Td>
                 <Td>{res.trade === 'sale' ? <Badge variant='solid' colorScheme='green'>Sell</Badge>:<Badge variant='solid' colorScheme='yellow'>Purchase</Badge>}</Td>
                 <Td>{res.payment === 'cash' ? <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge> : (
                       res.trade === 'sale' ? <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge> : <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>

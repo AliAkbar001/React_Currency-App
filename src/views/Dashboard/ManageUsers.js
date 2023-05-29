@@ -1,4 +1,4 @@
-import { AddIcon, SearchIcon, ViewIcon } from '@chakra-ui/icons'
+import { AddIcon, EditIcon, SearchIcon, ViewIcon } from '@chakra-ui/icons'
 import { 
     TableContainer,
     Table,
@@ -25,19 +25,6 @@ import {
     Modal,
     FormControl,
     FormLabel,
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay,
-    AlertDialogCloseButton,
-    Select,
-    NumberInput,
-    NumberInputField,
-    NumberInputStepper,
-    NumberIncrementStepper,
-    NumberDecrementStepper,
     useToast
 } from '@chakra-ui/react'
 import axios from 'axios'
@@ -51,16 +38,22 @@ import './style.css'
 let startD = ''
 let endD = ''
 export default function ManageUsers() {
-  const { isOpen, onOpen, onClose} = useDisclosure()
+  const newUserModal = useDisclosure()
+  const userSummaryModal = useDisclosure()
+  const userTransectionModal = useDisclosure()
+  const receivePaymentModal = useDisclosure()
   const [disclosureType, setDisclosureType] = useState('');
   const [newUser, setNewUsername] = useState('');
   const [validation, setValidation] = useState({msg:''});
   const [usersList, setUsersList] = useState([])
   const [usersListBackup, setUsersListBackup] = useState([])
   const [userTransactions, setUserTransactions] = useState(null)
+  const [userTransaction, setUserTransaction] = useState(null)
   const [selectedUserIndex, setSelectedUserIndex] = useState(null)
+  const [selectedTransectionIndex, setSelectedTransectionIndex] = useState(null)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [pendingPayment, setPendingPayment] = useState(0)
   const cancelRef = React.useRef()
   const toast = useToast()
   
@@ -84,7 +77,7 @@ export default function ManageUsers() {
       }
       axios.post(`${url_path}/users`, data).then(response => {
         if(response.data.error === 0 && response.data.acknowledged){
-          onClose()
+          newUserModal.onClose()
           toast({
             title: 'New user ' + newUser + ' create successfully.',
             status: 'success',
@@ -99,12 +92,12 @@ export default function ManageUsers() {
     }
   }
     function ToggleDisclosure(type, index){
-      if(index !== null){
+      if(type === 'user-summary'){
         if(usersList[index].transactions.length > 0){
           setUserTransactions(usersList[index].transactions)
           setSelectedUserIndex(index)
           setDisclosureType(type)
-          onOpen()
+          userSummaryModal.onOpen()
         }else{
           toast({
             title: 'No Transaction Found',
@@ -113,11 +106,12 @@ export default function ManageUsers() {
             isClosable: true,
           })
         }    
-      }else{
+      }else if(type === 'user-transection-detail'){
+        setUserTransaction(userTransactions[index].transections)
+        setSelectedTransectionIndex(index)
         setDisclosureType(type)
-        onOpen()
+        userTransectionModal.onOpen()
       }
-      
     }
 
     const filterUsers = (event)=>{
@@ -170,6 +164,48 @@ export default function ManageUsers() {
       }
     }
 
+    const confirmPendingPayment = ()=>{
+      setPendingPayment(parseInt(pendingPayment))
+      if(parseInt(pendingPayment) < 0 || parseInt(pendingPayment) === null || isNaN(parseInt(pendingPayment))){
+        toast({
+          title: 'Invalid Payment',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        })
+      }else if(parseInt(pendingPayment) > userTransactions[selectedTransectionIndex].pending_amount){
+        toast({
+          title: 'Pending amount cannot be more than total amount',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        })
+      }else{
+        const data = {
+          userID: usersList[selectedUserIndex]._id,
+          transectionID: userTransactions[selectedTransectionIndex]._id,
+          pending_amount: userTransactions[selectedTransectionIndex].pending_amount - parseInt(pendingPayment),
+          payed_amount: parseInt(pendingPayment) + userTransactions[selectedTransectionIndex].payed_amount,
+          payment: (parseInt(pendingPayment) + userTransactions[selectedTransectionIndex].payed_amount) === userTransactions[selectedTransectionIndex].total_amount ? 'cash' : 'pending'
+        }
+        axios.put(`${url_path}/transections`, data).then(response => {
+          if(response.data.modifiedCount === 1){
+            toast({
+              title: 'Payment update successfully.',
+              status: 'success',
+              duration: 9000,
+              isClosable: true,
+            })
+            axios.get(`${url_path}/users`).then(response => {
+              setUsersList(response.data)
+              setUsersListBackup(response.data)
+            });
+          }
+        })
+        receivePaymentModal.onClose()
+      }
+    }
+
     const TimeFormate = (date) =>{
       let today = new Date(date);
       today = today.getTime()
@@ -192,7 +228,7 @@ export default function ManageUsers() {
                 <Input type='tel' placeholder='Search Here' />
               </InputGroup>
             </Stack>
-            <Button onClick={()=>ToggleDisclosure('new-user', null)} style={{marginLeft:'1rem', width:'200px'}}><PersonIcon/>New User</Button>
+            <Button onClick={newUserModal.onOpen} style={{marginLeft:'1rem', width:'200px'}}><PersonIcon/>New User</Button>
             </Flex>
           </Flex>
         <TableContainer style={{width: '100%', marginTop:'2rem'}}>
@@ -204,8 +240,7 @@ export default function ManageUsers() {
         <Th>Created At</Th>
         <Th>Trade</Th>
         <Th>Payment</Th>
-        <Th>Amount</Th>
-        <Th>Currency</Th>
+        <Th>Total Amount</Th>
         <Th>Transaction Date</Th>
         <Th>Summary</Th>
       </Tr>
@@ -228,7 +263,6 @@ export default function ManageUsers() {
             )}
           </Td>
           <Td>{res.transactions.length === 0 ? '-' : res.transactions[res.transactions.length - 1].total_amount + ' PKR'}</Td>
-          <Td>{res.transactions.length === 0 ? '-' : res.transactions[res.transactions.length - 1].currency}</Td>
           <Td>{res.transactions.length === 0 ? '-' : TimeFormate(res.transactions[res.transactions.length - 1].created_at)}</Td>
           <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary', index)}><ViewIcon boxSize={6} /></Td>
         </Tr> ) : <Tr>
@@ -240,44 +274,8 @@ export default function ManageUsers() {
 </TableContainer>
         </CardBody>
     </Card>
-{disclosureType === 'alert' && 
-    <AlertDialog
-        motionPreset='slideInBottom'
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-        isOpen={isOpen}
-        isCentered
-      >
-        <AlertDialogOverlay />
-        <AlertDialogContent>
-          <AlertDialogHeader>Pay Debt?</AlertDialogHeader>
-          <AlertDialogCloseButton/>
-          <AlertDialogBody>
-            <Text style={{width: '100%', display:'flex', justifyContent:'space-between'}}><span style={{'fontWeight': 'bold'}}>Total Debt</span> <span style={{'fontWeight': '500'}}>19000 RS</span></Text>
-            <FormControl isRequired style={{'marginTop': '1rem'}}>
-                  <FormLabel>Enter Amount</FormLabel>
-                  <NumberInput min={1}>
-                    <NumberInputField/>
-                    <NumberInputStepper>
-                      <NumberIncrementStepper/>
-                      <NumberDecrementStepper/>
-                    </NumberInputStepper>
-                  </NumberInput>
-                </FormControl>
-            </AlertDialogBody>
-          <AlertDialogFooter>
-            <Button colorScheme='green'>
-              Confirm
-            </Button>
-            <Button ref={cancelRef} ml={3} onClick={onClose}>
-              Cancel
-            </Button> 
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-}
-{disclosureType === 'user-summary' &&
-<Modal onClose={onClose} size={'full'} isOpen={isOpen}>
+{selectedUserIndex !== null && 
+<Modal onClose={userSummaryModal.onClose} size={'full'} isOpen={userSummaryModal.isOpen}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
@@ -317,14 +315,13 @@ export default function ManageUsers() {
                   <Th>Trade</Th>
                   <Th>Payment</Th>
                   <Th>Debit/Pending</Th>
-                  <Th>Amount</Th>
-                  <Th>Currency</Th>
+                  <Th>Total Amount</Th>
                   <Th>Transaction Date</Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {userTransactions.length > 0 ? userTransactions.map((res, index) =>
-                  <Tr style={{cursor:'default'}}>
+                  <Tr style={{cursor:'default'}} onClick={()=>ToggleDisclosure('user-transection-detail', index)}>
                     <Td>{index + 1}</Td>
                     <Td>{res.trade === 'sale' ? <Badge variant='solid' colorScheme='green'>Sell</Badge>:<Badge variant='solid' colorScheme='yellow'>Purchase</Badge>}</Td>
                     <Td>{res.payment === 'cash' ? <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge> : (
@@ -335,7 +332,6 @@ export default function ManageUsers() {
                     <Td>
                       {res.total_amount + ' PKR'}
                     </Td>
-                    <Td>{res.currency}</Td>
                     <Td>{TimeFormate(res.created_at)}</Td>
                   </Tr> 
                   ): <Tr>
@@ -346,15 +342,103 @@ export default function ManageUsers() {
           </TableContainer>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose}>Close</Button>
+            <Button onClick={userSummaryModal.onClose}>Close</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+}{ selectedTransectionIndex !== null &&
+<Modal onClose={userTransectionModal.onClose} size={'full'} isOpen={userTransectionModal.isOpen}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+          <Flex justifyContent={'space-between'} alignItems={'center'}>
+              <Text style={{fontWeight: 'bold', fontSize:'large'}}>
+                {selectedTransectionIndex + 1} - {usersList[selectedUserIndex].username}
+              </Text>
+              <Text style={{fontWeight: 'bold', fontSize:'large'}}>
+                {TimeFormate(userTransactions[selectedTransectionIndex].created_at)}
+              </Text>
+              <Text style={{fontWeight: 'bold', fontSize:'large', marginRight: '2rem'}}>
+                {userTransactions[selectedTransectionIndex].trade === 'sale' ? <Badge variant='solid' colorScheme='green' fontSize='large'>Sell</Badge>:<Badge variant='solid' colorScheme='yellow' fontSize='large'>Purchase</Badge>}
+              </Text>
+          </Flex>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+          <TableContainer style={{width: '100%'}}>
+            <Table variant='simple'>
+              <Thead>
+                <Tr>
+                  <Th>NO#</Th>
+                  <Th>Currency</Th>
+                  <Th>Currency Rate</Th>
+                  <Th>Currency Amount</Th>
+                  <Th>Total Amount</Th>
+                  <Th>Edit</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {userTransaction.length > 0 ? userTransaction.map((res, index) =>
+                  <Tr style={{cursor:'default'}}>
+                    <Td>{index + 1}</Td>
+                    <Td>{res.currency}</Td>
+                    <Td>{res.currency_rate + ' PKR'}</Td>
+                    <Td>{res.currency_amount}</Td>
+                    <Td>{res.total_amount + ' PKR'}</Td>
+                    <Th><EditIcon boxSize={5}></EditIcon></Th>
+                  </Tr> 
+                  ): <Tr>
+                  <Td colspan="7">No Data Found</Td>
+              </Tr>}
+              </Tbody>
+            </Table>
+          </TableContainer>
+          <Text style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem'}}>Total Amount 
+            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].total_amount.toLocaleString()} PKR</span>
+          </Text> 
+          <Text onClick={receivePaymentModal.onOpen} style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem', cursor:'pointer'}}>Payment 
+            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].payment === 'cash' ? <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge> : (
+                userTransactions[selectedTransectionIndex].trade === 'sale' ? <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge> : <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
+              )}</span>
+          </Text>
+          {userTransactions[selectedTransectionIndex].pending_amount > 0 && 
+          <Text style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem'}}>Pending Amount
+          <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].pending_amount.toLocaleString()} PKR</span>
+        </Text>}
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={userTransectionModal.onClose}>Close</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
 }
-{disclosureType === 'new-user' &&
+
       <Modal
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={receivePaymentModal.isOpen}
+      onClose={receivePaymentModal.onClose}
+    >
+      <ModalOverlay />
+      <ModalContent>
+          <ModalHeader>Enter Pending Amount</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <FormControl>
+              <Input placeholder='Amount' value={pendingPayment} onChange={(e)=>setPendingPayment(e.target.value)}/>
+              {validation.msg !== '' && <small style={{color:'red'}}>{validation.msg}</small>}
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={confirmPendingPayment}>
+              Confirm Payment
+            </Button>
+            <Button onClick={receivePaymentModal.onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+    </Modal>
+      
+      <Modal
+      isOpen={newUserModal.isOpen}
+      onClose={newUserModal.onClose}
     >
       <ModalOverlay />
       <ModalContent>
@@ -371,11 +455,10 @@ export default function ManageUsers() {
             <Button colorScheme='blue' mr={3} onClick={handleSubmit}>
               Save
             </Button>
-            <Button onClick={onClose}>Cancel</Button>
+            <Button onClick={newUserModal.onClose}>Cancel</Button>
           </ModalFooter>
         </ModalContent>
     </Modal>
-      }
     </div>
   )
 }

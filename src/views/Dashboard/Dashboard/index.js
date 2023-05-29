@@ -214,7 +214,6 @@ export default function Dashboard() {
       validation = false
     }else if(validation){
       setAlertMsg2(false)
-      const api = formData.trade === 'sell' ? 'sales' : 'purchases'
       const data = {
         username: formData.username,
         transections: formData.transections,
@@ -222,9 +221,10 @@ export default function Dashboard() {
         payed_amount: formData.payment === 'cash' ? amounts.total_amount :parseInt(formData.payed_amount),
         pending_amount: formData.payment === 'cash' ? 0 : parseInt(amounts.pending_amount),
         total_amount: amounts.total_amount,
-        created_at: new Date()
+        created_at: new Date(),
+        trade: formData.trade === 'sell' ? 'sale' : 'purchase'
       }
-      axios.post(`${url_path}/${api}`, data).then(response => {
+      axios.post(`${url_path}/transections`, data).then(response => {
         if(response.data.acknowledged){
           toast({
             title: 'Transaction Complete.',
