@@ -199,6 +199,8 @@ export default function ManageUsers() {
             axios.get(`${url_path}/users`).then(response => {
               setUsersList(response.data)
               setUsersListBackup(response.data)
+              setUserTransactions(response.data[selectedUserIndex].transactions)
+              setUserTransaction(response.data[selectedUserIndex].transactions[selectedTransectionIndex].transections)
             });
           }
         })

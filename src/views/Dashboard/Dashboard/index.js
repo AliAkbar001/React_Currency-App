@@ -222,7 +222,8 @@ export default function Dashboard() {
         pending_amount: formData.payment === 'cash' ? 0 : parseInt(amounts.pending_amount),
         total_amount: amounts.total_amount,
         created_at: new Date(),
-        trade: formData.trade === 'sell' ? 'sale' : 'purchase'
+        trade: formData.trade === 'sell' ? 'sale' : 'purchase',
+        _id: new Date()
       }
       axios.post(`${url_path}/transections`, data).then(response => {
         if(response.data.acknowledged){

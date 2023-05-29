@@ -42,9 +42,8 @@ app.get('/api/currencies', async(req, res) => {
 
   app.put('/api/transections',(req, res) => {
     const data = req.body;
-    const transection_id = new ObjectId(data.transectionID);
     const user_id = new ObjectId(data.userID);
-    usersCollection.updateOne({_id: user_id, 'transactions._id': transection_id},{ $set: { 
+    usersCollection.updateOne({_id: user_id, 'transactions._id': data.transectionID},{ $set: { 
       'transactions.$.pending_amount': data.pending_amount,
       'transactions.$.payed_amount': data.payed_amount,
       'transactions.$.payment': data.payment
