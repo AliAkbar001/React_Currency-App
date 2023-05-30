@@ -58,6 +58,10 @@ export default function ManageUsers() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [pendingPayment, setPendingPayment] = useState(0)
+  const [selectedData, setSelectedData] = useState({
+    username: null,
+    transection: null
+  })
   const toast = useToast()
   
   useEffect(() => {
@@ -95,9 +99,10 @@ export default function ManageUsers() {
       })
     }
   }
-    function ToggleDisclosure(type, index){
+    function ToggleDisclosure(type, index, data){
       if(type === 'user-summary'){
         if(usersList[index].transactions.length > 0){
+          setSelectedData({...selectedData, username: data})
           setUserTransactions(usersList[index].transactions)
           setSelectedUserIndex(index)
           userSummaryModal.onOpen()
@@ -110,6 +115,7 @@ export default function ManageUsers() {
           })
         }    
       }else if(type === 'user-transection-detail'){
+        setSelectedData({...selectedData, transection: data})
         setUserTransaction(userTransactions[index].transections)
         setSelectedTransectionIndex(index)
         userTransectionModal.onOpen()
@@ -134,6 +140,10 @@ export default function ManageUsers() {
 
     const filterTransactions = (event)=>{
       const value = event.target.value
+      setSelectedCurrency(null)
+      setSelectedCurrencyIndex(null)
+      setSelectedTransectionIndex(null)
+      setUserTransaction(null)
       if(value === ''){
         setUserTransactions(usersList[selectedUserIndex].transactions)
       }else{
@@ -163,9 +173,21 @@ export default function ManageUsers() {
         const start = new Date(startD)
         const end = new Date(endD)
         const data = await usersList[selectedUserIndex].transactions.filter(item => {
-        const date = new Date(item.created_at);
-          return date >= start && date <= end;
+        let date = new Date(item.created_at);
+        date = new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit', day: '2-digit'}).format(date)
+        date = date.split('/')
+        let date2 = []
+        date2[0] = date[2]
+        date2[2] = date[1]
+        date2[1] = date[0]
+        date2 = date2.toString()
+        date2 = date2.replaceAll(',', '-')
+          return date2 >= start.toISOString().split('T')[0] && date2 <= end.toISOString().split('T')[0];
         });
+        setSelectedCurrency(null)
+        setSelectedCurrencyIndex(null)
+        setSelectedTransectionIndex(null)
+        setUserTransaction(null)
         setUserTransactions(data)
       }
     }
@@ -173,8 +195,14 @@ export default function ManageUsers() {
     const handleEditCurrency = event =>{
       const name = event.target.name
       let value = event.target.value
-      if(name === 'currency'){
-        setSelectedCurrency({...selectedCurrency, [name]: value})
+      setSelectedCurrency({...selectedCurrency, [name]: value})
+    }
+
+    const handleCurrencyData = event =>{
+      const name = event.target.name
+      let value = event.target.value
+      if(selectedCurrency.currency_rate < 0 || selectedCurrency.currency_amount < 0){
+        setSelectedCurrency({...selectedCurrency, [name]: 0})
       }else{
         setSelectedCurrency({...selectedCurrency, [name]: parseInt(value)})
       }
@@ -226,16 +254,17 @@ export default function ManageUsers() {
         }else{
           pendingAmount = pendingAmount + (userTransactions[selectedTransectionIndex].total_amount - totalAmount)
         }
+
         const data = {
           userID: usersList[selectedUserIndex]._id,
           transectionID: userTransactions[selectedTransectionIndex]._id,
           transections: temp,
           pending_amount: pendingAmount,
           total_amount: totalAmount,
-          payment: totalAmount !== userTransactions[selectedTransectionIndex].total_amount ? 'pending' : userTransactions[selectedTransectionIndex].payment
+          payment: totalAmount !== userTransactions[selectedTransectionIndex].total_amount ? 'pending' : userTransactions[selectedTransectionIndex].payment,
+          payed_amount: userTransactions[selectedTransectionIndex].payed_amount > totalAmount ? totalAmount : userTransactions[selectedTransectionIndex].payed_amount
         }
-        console.log(data)
-        axios.put(`${url_path}/edit-currency`, data).then(response => {
+        axios.put(`${url_path}/edit-currency`, data).then(async(response) => {
           if(response.data.modifiedCount === 1){
             toast({
               title: 'Currency update successfully.',
@@ -243,18 +272,35 @@ export default function ManageUsers() {
               duration: 9000,
               isClosable: true,
             })
-            axios.get(`${url_path}/users`).then(response => {
-              setUsersList(response.data)
-              setUsersListBackup(response.data)
-              setUserTransactions(response.data[selectedUserIndex].transactions)
-              setUserTransaction(response.data[selectedUserIndex].transactions[selectedTransectionIndex].transections)
-            });
+            await fetchData()
           }
         })
         editTransectionModal.onClose()
       }
     }
 
+    const fetchData = async()=>{
+      await axios.get(`${url_path}/users`).then(async(response) => {
+        let temp1 = null;
+        let temp2 = null;
+        await response.data.map((data, index)=>{
+          if(data.username === selectedData.username){
+            temp1 = index
+          }
+        })
+        await response.data[temp1].transactions.map((data, index)=>{
+          if(data.created_at === selectedData.transection){
+            temp2 = index
+          }
+        })
+        setUsersList(response.data)
+        setUsersListBackup(response.data)
+        setUserTransactions(response.data[temp1].transactions)
+        setUserTransaction(response.data[temp1].transactions[temp2].transections)
+        setSelectedUserIndex(temp1)
+        setSelectedTransectionIndex(temp2)
+      });
+    }
     const confirmPendingPayment = ()=>{
       setPendingPayment(parseInt(pendingPayment))
       if(parseInt(pendingPayment) < 0 || parseInt(pendingPayment) === null || isNaN(parseInt(pendingPayment))){
@@ -277,9 +323,9 @@ export default function ManageUsers() {
           transectionID: userTransactions[selectedTransectionIndex]._id,
           pending_amount: userTransactions[selectedTransectionIndex].pending_amount - parseInt(pendingPayment),
           payed_amount: parseInt(pendingPayment) + userTransactions[selectedTransectionIndex].payed_amount,
-          payment: (parseInt(pendingPayment) + userTransactions[selectedTransectionIndex].payed_amount) === userTransactions[selectedTransectionIndex].total_amount ? 'cash' : 'pending'
+          payment: ((parseInt(pendingPayment) + userTransactions[selectedTransectionIndex].payed_amount) === userTransactions[selectedTransectionIndex].total_amount || (userTransactions[selectedTransectionIndex].pending_amount - parseInt(pendingPayment)) === 0) ? 'cash' : 'pending'
         }
-        axios.put(`${url_path}/transections`, data).then(response => {
+        axios.put(`${url_path}/transections`, data).then(async(response) => {
           if(response.data.modifiedCount === 1){
             toast({
               title: 'Payment update successfully.',
@@ -287,12 +333,8 @@ export default function ManageUsers() {
               duration: 9000,
               isClosable: true,
             })
-            axios.get(`${url_path}/users`).then(response => {
-              setUsersList(response.data)
-              setUsersListBackup(response.data)
-              setUserTransactions(response.data[selectedUserIndex].transactions)
-              setUserTransaction(response.data[selectedUserIndex].transactions[selectedTransectionIndex].transections)
-            });
+            setPendingPayment(0)
+            await fetchData()
           }
         })
         receivePaymentModal.onClose()
@@ -357,7 +399,7 @@ export default function ManageUsers() {
           </Td>
           <Td>{res.transactions.length === 0 ? '-' : res.transactions[res.transactions.length - 1].total_amount + ' PKR'}</Td>
           <Td>{res.transactions.length === 0 ? '-' : TimeFormate(res.transactions[res.transactions.length - 1].created_at)}</Td>
-          <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary', index)}><ViewIcon boxSize={6} /></Td>
+          <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary', index, res.username)}><ViewIcon boxSize={6} /></Td>
         </Tr> ) : <Tr>
             <Td colspan="9">No Data Found</Td>
         </Tr>
@@ -389,11 +431,11 @@ export default function ManageUsers() {
               </FormControl>
               <FormControl>
               <FormLabel>Start Date</FormLabel>
-              <Input type='datetime-local' name="startDate" value={startDate} onChange={handleDateRange}/>
+              <Input type='date' name="startDate" value={startDate} onChange={handleDateRange}/>
               </FormControl>
               <FormControl>
                 <FormLabel>End Date</FormLabel>
-                <Input type='datetime-local' name="endDate" value={endDate} min={startDate} onChange={handleDateRange}/>
+                <Input type='date' name="endDate" value={endDate} min={startDate} onChange={handleDateRange}/>
               </FormControl>
             </Flex>
           </Flex>
@@ -414,7 +456,7 @@ export default function ManageUsers() {
               </Thead>
               <Tbody>
                 {userTransactions.length > 0 ? userTransactions.map((res, index) =>
-                  <Tr style={{cursor:'default'}} onClick={()=>ToggleDisclosure('user-transection-detail', index)}>
+                  <Tr style={{cursor:'default'}} onClick={()=>ToggleDisclosure('user-transection-detail', index, res.created_at)}>
                     <Td>{index + 1}</Td>
                     <Td>{res.trade === 'sale' ? <Badge variant='solid' colorScheme='green'>Sell</Badge>:<Badge variant='solid' colorScheme='yellow'>Purchase</Badge>}</Td>
                     <Td>{res.payment === 'cash' ? <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge> : (
@@ -550,11 +592,11 @@ export default function ManageUsers() {
             </FormControl>
             <FormControl>
             <FormLabel>Currency Rate</FormLabel>
-              <Input placeholder='Rate' name='currency_rate' value={selectedCurrency.currency_rate} onChange={handleEditCurrency}/>
+              <Input placeholder='Rate' name='currency_rate' value={selectedCurrency.currency_rate} onChange={handleEditCurrency} onFocusCapture={handleCurrencyData}/>
             </FormControl>
             <FormControl>
             <FormLabel>Currency Amount</FormLabel>
-              <Input placeholder='Amount' name='currency_amount' value={selectedCurrency.currency_amount} onChange={handleEditCurrency}/>
+              <Input placeholder='Amount' name='currency_amount' value={selectedCurrency.currency_amount} onChange={handleEditCurrency} onFocusCapture={handleCurrencyData}/>
             </FormControl>
           </ModalBody>
           <ModalFooter>

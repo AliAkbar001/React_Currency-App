@@ -59,7 +59,8 @@ app.get('/api/currencies', async(req, res) => {
       'transactions.$.transections': data.transections,
       'transactions.$.pending_amount': data.pending_amount,
       'transactions.$.total_amount': data.total_amount,
-      'transactions.$.payment': data.payment
+      'transactions.$.payment': data.payment,
+      'transactions.$.payed_amount': data.payed_amount
     }}, (err, result) => {
       res.json(result);
     })
