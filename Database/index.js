@@ -52,6 +52,18 @@ app.get('/api/currencies', async(req, res) => {
     })
   });
 
+  app.put('/api/edit-currency',(req, res) => {
+    const data = req.body;
+    const user_id = new ObjectId(data.userID);
+    usersCollection.updateOne({_id: user_id, 'transactions._id': data.transectionID},{ $set: { 
+      'transactions.$.transections': data.transections,
+      'transactions.$.pending_amount': data.pending_amount,
+      'transactions.$.total_amount': data.total_amount,
+      'transactions.$.payment': data.payment
+    }}, (err, result) => {
+      res.json(result);
+    })
+  });
   // //other apis
   // app.get('/api/sales', async(req, res) => {
   //   const cursor = salesCollection.find()

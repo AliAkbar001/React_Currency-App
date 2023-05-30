@@ -25,7 +25,8 @@ import {
     Modal,
     FormControl,
     FormLabel,
-    useToast
+    useToast,
+    Select
 } from '@chakra-ui/react'
 import axios from 'axios'
 import Card from 'components/Card/Card'
@@ -42,7 +43,7 @@ export default function ManageUsers() {
   const userSummaryModal = useDisclosure()
   const userTransectionModal = useDisclosure()
   const receivePaymentModal = useDisclosure()
-  const [disclosureType, setDisclosureType] = useState('');
+  const editTransectionModal = useDisclosure()
   const [newUser, setNewUsername] = useState('');
   const [validation, setValidation] = useState({msg:''});
   const [usersList, setUsersList] = useState([])
@@ -51,13 +52,16 @@ export default function ManageUsers() {
   const [userTransaction, setUserTransaction] = useState(null)
   const [selectedUserIndex, setSelectedUserIndex] = useState(null)
   const [selectedTransectionIndex, setSelectedTransectionIndex] = useState(null)
+  const [selectedCurrency, setSelectedCurrency] = useState(null)
+  const [selectedCurrencyIndex, setSelectedCurrencyIndex] = useState(null)
+  const [currencies, setCurrencies] = useState([])
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [pendingPayment, setPendingPayment] = useState(0)
-  const cancelRef = React.useRef()
   const toast = useToast()
   
   useEffect(() => {
+    axios.get(`${url_path}/currencies`).then(response => setCurrencies(response.data));
     axios.get(`${url_path}/users`).then(response => {
       setUsersList(response.data)
       setUsersListBackup(response.data)
@@ -96,7 +100,6 @@ export default function ManageUsers() {
         if(usersList[index].transactions.length > 0){
           setUserTransactions(usersList[index].transactions)
           setSelectedUserIndex(index)
-          setDisclosureType(type)
           userSummaryModal.onOpen()
         }else{
           toast({
@@ -109,8 +112,11 @@ export default function ManageUsers() {
       }else if(type === 'user-transection-detail'){
         setUserTransaction(userTransactions[index].transections)
         setSelectedTransectionIndex(index)
-        setDisclosureType(type)
         userTransectionModal.onOpen()
+      }else if(type === 'edit-currency'){
+        setSelectedCurrency(userTransaction[index])
+        setSelectedCurrencyIndex(index)
+        editTransectionModal.onOpen()
       }
     }
 
@@ -161,6 +167,91 @@ export default function ManageUsers() {
           return date >= start && date <= end;
         });
         setUserTransactions(data)
+      }
+    }
+
+    const handleEditCurrency = event =>{
+      const name = event.target.name
+      let value = event.target.value
+      if(name === 'currency'){
+        setSelectedCurrency({...selectedCurrency, [name]: value})
+      }else{
+        setSelectedCurrency({...selectedCurrency, [name]: parseInt(value)})
+      }
+    }
+
+    const editCurrencySubmit = async()=>{
+      setSelectedCurrency({
+        ...selectedCurrency,
+        currency_amount: parseInt(selectedCurrency.currency_amount),
+        currency_rate: parseInt(selectedCurrency.currency_rate)
+      })
+      if(selectedCurrency.currency === null || selectedCurrency.currency === ''){
+        toast({
+          title: 'Select Currency',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        })
+      }else if(selectedCurrency.currency_rate < 0 || selectedCurrency.currency_rate === null || selectedCurrency.currency_rate === ''){
+        toast({
+          title: 'Invalid Currency Rate',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        })
+        setSelectedCurrency({
+          ...selectedCurrency,
+          currency_rate: 0
+        })
+      }else if(selectedCurrency.currency_amount < 0 || selectedCurrency.currency_amount === null || selectedCurrency.currency_amount === ''){
+        toast({
+          title: 'Invalid Currency Amount',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        })
+        setSelectedCurrency({
+          ...selectedCurrency,
+          currency_amount: 0
+        })
+      }else{
+        let temp = userTransaction
+        temp[selectedCurrencyIndex] = {...selectedCurrency, total_amount: selectedCurrency.currency_amount * selectedCurrency.currency_rate}
+        let totalAmount = 0
+        await temp.map(data => totalAmount = totalAmount + data.total_amount)
+        let pendingAmount = userTransactions[selectedTransectionIndex].pending_amount
+        if(totalAmount > userTransactions[selectedTransectionIndex].total_amount){
+          pendingAmount = pendingAmount + (totalAmount - userTransactions[selectedTransectionIndex].total_amount)
+        }else{
+          pendingAmount = pendingAmount + (userTransactions[selectedTransectionIndex].total_amount - totalAmount)
+        }
+        const data = {
+          userID: usersList[selectedUserIndex]._id,
+          transectionID: userTransactions[selectedTransectionIndex]._id,
+          transections: temp,
+          pending_amount: pendingAmount,
+          total_amount: totalAmount,
+          payment: totalAmount !== userTransactions[selectedTransectionIndex].total_amount ? 'pending' : userTransactions[selectedTransectionIndex].payment
+        }
+        console.log(data)
+        axios.put(`${url_path}/edit-currency`, data).then(response => {
+          if(response.data.modifiedCount === 1){
+            toast({
+              title: 'Currency update successfully.',
+              status: 'success',
+              duration: 9000,
+              isClosable: true,
+            })
+            axios.get(`${url_path}/users`).then(response => {
+              setUsersList(response.data)
+              setUsersListBackup(response.data)
+              setUserTransactions(response.data[selectedUserIndex].transactions)
+              setUserTransaction(response.data[selectedUserIndex].transactions[selectedTransectionIndex].transections)
+            });
+          }
+        })
+        editTransectionModal.onClose()
       }
     }
 
@@ -387,7 +478,7 @@ export default function ManageUsers() {
                     <Td>{res.currency_rate + ' PKR'}</Td>
                     <Td>{res.currency_amount}</Td>
                     <Td>{res.total_amount + ' PKR'}</Td>
-                    <Th><EditIcon boxSize={5}></EditIcon></Th>
+                    <Th><EditIcon boxSize={5} cursor={'pointer'} onClick={()=>ToggleDisclosure('edit-currency', index)}></EditIcon></Th>
                   </Tr> 
                   ): <Tr>
                   <Td colspan="7">No Data Found</Td>
@@ -403,10 +494,15 @@ export default function ManageUsers() {
                 userTransactions[selectedTransectionIndex].trade === 'sale' ? <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge> : <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
               )}</span>
           </Text>
-          {userTransactions[selectedTransectionIndex].pending_amount > 0 && 
-          <Text style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem'}}>Pending Amount
-          <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].pending_amount.toLocaleString()} PKR</span>
-        </Text>}
+          {userTransactions[selectedTransectionIndex].payment === 'pending' && <>
+          <Text style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem'}}>Payed Amount
+          <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].payed_amount.toLocaleString()} PKR</span>
+        </Text>
+        <Text style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem'}}>Pending Amount
+        <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].pending_amount.toLocaleString()} PKR</span>
+      </Text>
+      </>
+        }
           </ModalBody>
           <ModalFooter>
             <Button onClick={userTransectionModal.onClose}>Close</Button>
@@ -414,7 +510,6 @@ export default function ManageUsers() {
         </ModalContent>
       </Modal>
 }
-
       <Modal
       isOpen={receivePaymentModal.isOpen}
       onClose={receivePaymentModal.onClose}
@@ -437,7 +532,40 @@ export default function ManageUsers() {
           </ModalFooter>
         </ModalContent>
     </Modal>
-      
+    {selectedCurrency !== null && 
+    <Modal
+      isOpen={editTransectionModal.isOpen}
+      onClose={editTransectionModal.onClose}
+    >
+      <ModalOverlay />
+      <ModalContent>
+          <ModalCloseButton />
+          <ModalHeader>Edit Currency</ModalHeader>
+          <ModalBody pb={6}>
+            <FormControl>
+            <FormLabel>Currency</FormLabel>
+            <Select placeholder='Select Currency' name="currency" value={selectedCurrency.currency} onChange={handleEditCurrency}>
+              {currencies.map(data => <option value={data}>{data}</option>)}
+            </Select>
+            </FormControl>
+            <FormControl>
+            <FormLabel>Currency Rate</FormLabel>
+              <Input placeholder='Rate' name='currency_rate' value={selectedCurrency.currency_rate} onChange={handleEditCurrency}/>
+            </FormControl>
+            <FormControl>
+            <FormLabel>Currency Amount</FormLabel>
+              <Input placeholder='Amount' name='currency_amount' value={selectedCurrency.currency_amount} onChange={handleEditCurrency}/>
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={editCurrencySubmit}>
+              Save Changes
+            </Button>
+            <Button onClick={editTransectionModal.onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+    </Modal>
+}
       <Modal
       isOpen={newUserModal.isOpen}
       onClose={newUserModal.onClose}
