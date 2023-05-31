@@ -18,6 +18,7 @@ import Currency from "views/Dashboard/Dashboard/components/Currency";
 import BalanceSheet from "views/Dashboard/BalanceSheet";
 import Debits from "views/Dashboard/Debits";
 import Pending from "views/Dashboard/Pending";
+import Currencies from "views/Dashboard/Currencies";
 
 var dashRoutes = [
   {
@@ -51,14 +52,14 @@ var dashRoutes = [
     component: Expenses,
     layout: "/admin",
   },
-  // {
-  //   path: "/debits",
-  //   name: "Debits",
-  //   icon: <CreditIcon color="inherit" />,
-  //   secondaryNavbar: true,
-  //   component: Debits,
-  //   layout: "/admin",
-  // },
+  {
+    path: "/currencies",
+    name: "Currencies",
+    icon: <CreditIcon color="inherit" />,
+    secondaryNavbar: true,
+    component: Currencies,
+    layout: "/admin",
+  },
   // {
   //   path: "/pending-payments",
   //   name: "Pending Payments",

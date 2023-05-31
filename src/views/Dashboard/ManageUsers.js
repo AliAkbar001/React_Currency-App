@@ -144,11 +144,31 @@ export default function ManageUsers() {
       setSelectedCurrencyIndex(null)
       setSelectedTransectionIndex(null)
       setUserTransaction(null)
-      if(value === ''){
+      if(value === 'all'){
         setUserTransactions(usersList[selectedUserIndex].transactions)
-      }else{
+      }else if(value === 'sell'){
         const data =  usersList[selectedUserIndex].transactions.filter((e)=>{
-          return JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) > -1 
+          return e.trade === 'sale' 
+        })
+        setUserTransactions(data)
+      }else if(value === 'purchase'){
+        const data =  usersList[selectedUserIndex].transactions.filter((e)=>{
+          return e.trade === 'purchase' 
+        })
+        setUserTransactions(data)
+      }else if(value === 'debit'){
+        const data =  usersList[selectedUserIndex].transactions.filter((e)=>{
+          return e.trade === 'sale' && e.payment === 'pending'
+        })
+        setUserTransactions(data)
+      }else if(value === 'pending'){
+        const data =  usersList[selectedUserIndex].transactions.filter((e)=>{
+          return e.trade === 'purchase' && e.payment === 'pending'
+        })
+        setUserTransactions(data)
+      }else if(value === 'complete'){
+        const data =  usersList[selectedUserIndex].transactions.filter((e)=>{
+          return e.payment === 'cash'
         })
         setUserTransactions(data)
       }
@@ -221,7 +241,7 @@ export default function ManageUsers() {
           duration: 5000,
           isClosable: true,
         })
-      }else if(selectedCurrency.currency_rate < 0 || selectedCurrency.currency_rate === null || selectedCurrency.currency_rate === ''){
+      }else if(parseInt(selectedCurrency.currency_rate) < 0 || parseInt(selectedCurrency.currency_rate) === null || parseInt(selectedCurrency.currency_rate) === ''){
         toast({
           title: 'Invalid Currency Rate',
           status: 'error',
@@ -232,7 +252,7 @@ export default function ManageUsers() {
           ...selectedCurrency,
           currency_rate: 0
         })
-      }else if(selectedCurrency.currency_amount < 0 || selectedCurrency.currency_amount === null || selectedCurrency.currency_amount === ''){
+      }else if(parseInt(selectedCurrency.currency_amount) < 0 || parseInt(selectedCurrency.currency_amount) === null || parseInt(selectedCurrency.currency_amount) === ''){
         toast({
           title: 'Invalid Currency Amount',
           status: 'error',
@@ -245,7 +265,11 @@ export default function ManageUsers() {
         })
       }else{
         let temp = userTransaction
-        temp[selectedCurrencyIndex] = {...selectedCurrency, total_amount: selectedCurrency.currency_amount * selectedCurrency.currency_rate}
+        temp[selectedCurrencyIndex] = {
+          ...selectedCurrency,
+          currency_amount: parseInt(selectedCurrency.currency_amount),
+          currency_rate: parseInt(selectedCurrency.currency_rate),
+          total_amount: parseInt(selectedCurrency.currency_amount) * parseInt(selectedCurrency.currency_rate)}
         let totalAmount = 0
         let diff = 0
         await temp.map(data => totalAmount = totalAmount + data.total_amount)
@@ -409,7 +433,7 @@ export default function ManageUsers() {
               )
             )}
           </Td>
-          <Td>{res.transactions.length === 0 ? '-' : res.transactions[res.transactions.length - 1].total_amount + ' PKR'}</Td>
+          <Td>{res.transactions.length === 0 ? '-' : res.transactions[res.transactions.length - 1].total_amount.toLocaleString() + ' PKR'}</Td>
           <Td>{res.transactions.length === 0 ? '-' : TimeFormate(res.transactions[res.transactions.length - 1].created_at)}</Td>
           <Td style={{cursor:'pointer'}} onClick={()=>ToggleDisclosure('user-summary', index, res.username)}><ViewIcon boxSize={6} /></Td>
         </Tr> ) : <Tr>
@@ -432,14 +456,15 @@ export default function ManageUsers() {
               </Text>
             <Flex justifyContent={'space-between'} alignItems={'end'} gap={'0.5rem'}>
               <FormControl>
-                <FormLabel>Search Transactions</FormLabel>
-                <InputGroup onChange={filterTransactions}>
-                  <InputLeftElement
-                    pointerEvents='none'
-                    children={<SearchIcon color='gray.300' />}
-                  />
-                <Input type='tel' placeholder='Search Here' />
-              </InputGroup>
+                <FormLabel>Filter Transactions</FormLabel>
+                <Select name="filter" onChange={filterTransactions} >
+                  <option value="all">All</option>
+                  <option value="sell">Sales</option>
+                  <option value="purchase">Purchases</option>
+                  <option value="debit">Debit Payments</option>
+                  <option value="pending">Pending Payments</option>
+                  <option value="complete">Complete Payments</option>
+                </Select>
               </FormControl>
               <FormControl>
               <FormLabel>Start Date</FormLabel>
@@ -475,9 +500,9 @@ export default function ManageUsers() {
                           res.trade === 'sale' ? <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge> : <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
                         )}
                     </Td>
-                    <Td>{res.pending_amount + ' PKR'}</Td>
+                    <Td>{res.pending_amount.toLocaleString() + ' PKR'}</Td>
                     <Td>
-                      {res.total_amount + ' PKR'}
+                      {res.total_amount.toLocaleString() + ' PKR'}
                     </Td>
                     <Td>{TimeFormate(res.created_at)}</Td>
                   </Tr> 
@@ -529,9 +554,9 @@ export default function ManageUsers() {
                   <Tr style={{cursor:'default'}}>
                     <Td>{index + 1}</Td>
                     <Td>{res.currency}</Td>
-                    <Td>{res.currency_rate + ' PKR'}</Td>
-                    <Td>{res.currency_amount}</Td>
-                    <Td>{res.total_amount + ' PKR'}</Td>
+                    <Td>{res.currency_rate.toLocaleString() + ' PKR'}</Td>
+                    <Td>{res.currency_amount.toLocaleString()}</Td>
+                    <Td>{res.total_amount.toLocaleString() + ' PKR'}</Td>
                     <Th><EditIcon boxSize={5} cursor={'pointer'} onClick={()=>ToggleDisclosure('edit-currency', index)}></EditIcon></Th>
                   </Tr> 
                   ): <Tr>
