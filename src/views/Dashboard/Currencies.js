@@ -13,11 +13,13 @@ import {
     Input,
     FormControl,
     FormLabel,
-    Select
+    Select,
+    Stack,
+    Button
 } from '@chakra-ui/react'
-import { AddIcon, EditIcon, SearchIcon, ViewIcon } from '@chakra-ui/icons'
+import { AddIcon, DownloadIcon, EditIcon, SearchIcon, ViewIcon } from '@chakra-ui/icons'
 import axios from 'axios'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { url_path } from 'views/constants'
 let startD = ''
 let endD = ''
@@ -229,10 +231,24 @@ export default function Currencies() {
         }
       }
 
+      const handleGeneratePdf = () => {
+        var content = document.getElementById("currencyReportPDF");
+        var pri = document.getElementById("currencyReportFrame").contentWindow;
+        pri.document.open();
+        pri.document.write(content.innerHTML);
+        pri.document.close();
+        pri.focus();
+        pri.print();
+      };
+
   return (
     <div style={{marginTop:'6rem'}}>
         <Flex justifyContent={'space-between'} alignItems={'center'}>
-              <Text></Text>
+        <Stack direction='row' spacing={4} onClick={handleGeneratePdf}>
+            <Button leftIcon={<DownloadIcon />} colorScheme='teal' variant='solid'>
+              PDF
+            </Button>
+          </Stack>
             <Flex justifyContent={'space-between'} alignItems={'end'} gap={'0.5rem'}>
             <FormControl>
                 <FormLabel>Filter Currency</FormLabel>
@@ -263,36 +279,70 @@ export default function Currencies() {
               </FormControl>
             </Flex>
           </Flex>
-          <TableContainer style={{width: '100%', marginTop: '2rem'}}>
-            <Table variant='simple'>
-              <Thead>
-                <Tr>
-                  <Th>NO#</Th>
-                  <Th>Currency</Th>
-                  <Th>Average Rate</Th>
-                  <Th>Purchase</Th>
-                  <Th>Sales</Th>
-                  <Th>Profit/Lose</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {dataList.length > 0 ? dataList.map((res, index) =>
+          <div>
+            <TableContainer style={{width: '100%', marginTop: '2rem'}}>
+              <Table variant='simple'>
+                <Thead>
                   <Tr>
-                    <Td>{index + 1}</Td>
-                    <Td>{res.currency}</Td>
-                    <Td>{res.avg_rate}</Td>
-                    <Td>{res.total_purchase.toLocaleString() + ' ' + res.currency}</Td>
-                    <Td>{res.total_sale.toLocaleString() + ' ' + res.currency}</Td>
-                    <Td fontWeight={'bold'}>
-                        {res.total > 0 ? <span style={{color:'green'}}>{res.total.toLocaleString() + ' PKR'}</span> : (res.total < 0 ? <span style={{color:'red'}}>{res.total.toLocaleString() + ' PKR'}</span> : <span style={{color:'gray'}}>{0 + ' PKR'}</span>)}
-                    </Td>
-                  </Tr> 
-                  ): <Tr>
-                  <Td colspan="7">No Data Found</Td>
-              </Tr>}
-              </Tbody>
-            </Table>
-          </TableContainer>
+                    <Th>NO#</Th>
+                    <Th>Currency</Th>
+                    <Th>Average Rate</Th>
+                    <Th>Purchase</Th>
+                    <Th>Sales</Th>
+                    <Th>Profit/Lose</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {dataList.length > 0 ? dataList.map((res, index) =>
+                    <Tr>
+                      <Td>{index + 1}</Td>
+                      <Td>{res.currency}</Td>
+                      <Td>{res.avg_rate}</Td>
+                      <Td>{res.total_purchase.toLocaleString() + ' ' + res.currency}</Td>
+                      <Td>{res.total_sale.toLocaleString() + ' ' + res.currency}</Td>
+                      <Td fontWeight={'bold'}>
+                          {res.total > 0 ? <span style={{color:'green'}}>{res.total.toLocaleString() + ' PKR'}</span> : (res.total < 0 ? <span style={{color:'red'}}>{res.total.toLocaleString() + ' PKR'}</span> : <span style={{color:'gray'}}>{0 + ' PKR'}</span>)}
+                      </Td>
+                    </Tr> 
+                    ): <Tr>
+                    <Td colspan="7">No Data Found</Td>
+                </Tr>}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </div>   
+            <iframe id="currencyReportFrame" style={{display:"none"}} title="Online Management System">
+          <div  id="currencyReportPDF"  style={{display:"none",width:"100%"}}>
+              <table variant='simple'>
+                <thead>
+                  <tr>
+                    <th>NO#</th>
+                    <th>Currency</th>
+                    <th>Average Rate</th>
+                    <th>Purchase</th>
+                    <th>Sales</th>
+                    <th>Profit/Lose</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dataList.length > 0 ? dataList.map((res, index) =>
+                    <tr>
+                      <td style={{border:"1px solid black",padding:"0.3em"}}>{index + 1}</td>
+                      <td style={{border:"1px solid black",padding:"0.3em"}}>{res.currency}</td>
+                      <td style={{border:"1px solid black",padding:"0.3em"}}>{res.avg_rate}</td>
+                      <td style={{border:"1px solid black",padding:"0.3em"}}>{res.total_purchase.toLocaleString() + ' ' + res.currency}</td>
+                      <td style={{border:"1px solid black",padding:"0.3em"}}>{res.total_sale.toLocaleString() + ' ' + res.currency}</td>
+                      <td style={{border:"1px solid black",padding:"0.3em"}} fontWeight={'bold'}>
+                          {res.total > 0 ? <span style={{color:'green'}}>{res.total.toLocaleString() + ' PKR'}</span> : (res.total < 0 ? <span style={{color:'red'}}>{res.total.toLocaleString() + ' PKR'}</span> : <span style={{color:'gray'}}>{0 + ' PKR'}</span>)}
+                      </td>
+                    </tr> 
+                    ): <tr>
+                    <td colspan="7">No Data Found</td>
+                </tr>}
+                </tbody>
+              </table>
+         </div>
+         </iframe>
     </div>
   )
 }

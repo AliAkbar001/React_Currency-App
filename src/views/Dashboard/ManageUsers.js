@@ -1,4 +1,4 @@
-import { AddIcon, EditIcon, SearchIcon, ViewIcon } from '@chakra-ui/icons'
+import { AddIcon, DownloadIcon, EditIcon, SearchIcon, ViewIcon } from '@chakra-ui/icons'
 import { 
     TableContainer,
     Table,
@@ -26,7 +26,8 @@ import {
     FormControl,
     FormLabel,
     useToast,
-    Select
+    Select,
+    ButtonGroup
 } from '@chakra-ui/react'
 import axios from 'axios'
 import Card from 'components/Card/Card'
@@ -383,6 +384,16 @@ export default function ManageUsers() {
       return new Intl.DateTimeFormat('en-US', {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'}).format(today)
     }
 
+    const handleGeneratePdf = () => {
+      var content = document.getElementById("transectionReportPDF");
+      var pri = document.getElementById("transectionReportFrame").contentWindow;
+      pri.document.open();
+      pri.document.write(content.innerHTML);
+      pri.document.close();
+      pri.focus();
+      pri.print();
+    };
+
   return (
     <div style={{marginTop:'5rem'}}>
     <Card>
@@ -524,6 +535,11 @@ export default function ManageUsers() {
         <ModalContent>
           <ModalHeader>
           <Flex justifyContent={'space-between'} alignItems={'center'}>
+          <Stack direction='row' spacing={4} onClick={handleGeneratePdf}>
+            <Button leftIcon={<DownloadIcon />} colorScheme='teal' variant='solid'>
+              PDF
+            </Button>
+          </Stack>
               <Text style={{fontWeight: 'bold', fontSize:'large'}}>
                 {selectedTransectionIndex + 1} - {usersList[selectedUserIndex].username}
               </Text>
@@ -557,7 +573,7 @@ export default function ManageUsers() {
                     <Td>{res.currency_rate.toLocaleString() + ' PKR'}</Td>
                     <Td>{res.currency_amount.toLocaleString()}</Td>
                     <Td>{res.total_amount.toLocaleString() + ' PKR'}</Td>
-                    <Th><EditIcon boxSize={5} cursor={'pointer'} onClick={()=>ToggleDisclosure('edit-currency', index)}></EditIcon></Th>
+                    <Td><EditIcon boxSize={5} cursor={'pointer'} onClick={()=>ToggleDisclosure('edit-currency', index)}></EditIcon></Td>
                   </Tr> 
                   ): <Tr>
                   <Td colspan="7">No Data Found</Td>
@@ -668,6 +684,66 @@ export default function ManageUsers() {
           </ModalFooter>
         </ModalContent>
     </Modal>
+    <iframe id="transectionReportFrame" style={{display:"none"}} title="Online Management System">
+          <div  id="transectionReportPDF"  style={{display:"none",width:"100%"}}>
+            {userTransaction !== null && <>
+              <div style={{fontWeight: 'bold', fontSize:'large'}}>
+                {selectedTransectionIndex + 1} - {usersList[selectedUserIndex].username}
+              </div>
+              <div style={{fontWeight: 'bold', fontSize:'large'}}>
+                {TimeFormate(userTransactions[selectedTransectionIndex].created_at)}
+              </div>
+              <div style={{fontWeight: 'bold', fontSize:'large', marginRight: '2rem'}}>
+                {userTransactions[selectedTransectionIndex].trade === 'sale' ? <Badge variant='solid' colorScheme='green' fontSize='large'>Sell</Badge>:<Badge variant='solid' colorScheme='yellow' fontSize='large'>Purchase</Badge>}
+              </div>
+            </>}
+              <table variant='simple' style={{marginTop:'2rem'}}>
+                <thead>
+                  <tr>
+                    <th>NO#</th>
+                    <th>Currency</th>
+                    <th>Currency Rate</th>
+                    <th>Currency Amount</th>
+                    <th>Total Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                { userTransaction !== null && userTransaction.length > 0  ? userTransaction.map((res, index) =>
+                  <tr style={{cursor:'default'}}>
+                    <td style={{border:"1px solid black",padding:"0.3em"}}>{index + 1}</td>
+                    <td style={{border:"1px solid black",padding:"0.3em"}}>{res.currency}</td>
+                    <td style={{border:"1px solid black",padding:"0.3em"}}>{res.currency_rate.toLocaleString() + ' PKR'}</td>
+                    <td style={{border:"1px solid black",padding:"0.3em"}}>{res.currency_amount.toLocaleString()}</td>
+                    <td style={{border:"1px solid black",padding:"0.3em"}}>{res.total_amount.toLocaleString() + ' PKR'}</td>
+                  </tr> 
+                  ): <tr>
+                  <td colspan="7">No Data Found</td>
+              </tr>}
+                </tbody>
+              </table>
+              {userTransaction !== null && 
+              <>
+              <div style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem'}}>Total Amount 
+            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].total_amount.toLocaleString()} PKR</span>
+          </div> 
+          <div onClick={receivePaymentModal.onOpen} style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem', cursor:'pointer'}}>Payment 
+            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].payment === 'cash' ? <Badge colorScheme='green' fontSize='0.9em'>Complete</Badge> : (
+                userTransactions[selectedTransectionIndex].trade === 'sale' ? <Badge colorScheme='red' fontSize='0.9em'>Debt</Badge> : <Badge colorScheme='yellow' fontSize='0.9em'>Pending</Badge>
+              )}</span>
+          </div>
+          {userTransactions[selectedTransectionIndex].payment === 'pending' && <>
+          <div style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem'}}>Payed Amount
+            <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].payed_amount.toLocaleString()} PKR</span>
+          </div>
+        <div style={{margin:'2rem 0', "fontWeight": "bold", border: '2px solid gray', padding:'2rem'}}>Pending Amount
+          <span style={{"fontWeight": "bold",'float':'right', fontSize:'large'}}>{userTransactions[selectedTransectionIndex].pending_amount.toLocaleString()} PKR</span>
+        </div>
+          </>       
+          }
+          </>
+          }
+          </div>
+         </iframe>
     </div>
   )
 }
