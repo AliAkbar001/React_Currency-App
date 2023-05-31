@@ -247,22 +247,34 @@ export default function ManageUsers() {
         let temp = userTransaction
         temp[selectedCurrencyIndex] = {...selectedCurrency, total_amount: selectedCurrency.currency_amount * selectedCurrency.currency_rate}
         let totalAmount = 0
+        let diff = 0
         await temp.map(data => totalAmount = totalAmount + data.total_amount)
         let pendingAmount = userTransactions[selectedTransectionIndex].pending_amount
+        let payedAmount = userTransactions[selectedTransectionIndex].payed_amount
         if(totalAmount > userTransactions[selectedTransectionIndex].total_amount){
-          pendingAmount = pendingAmount + (totalAmount - userTransactions[selectedTransectionIndex].total_amount)
-        }else{
-          pendingAmount = pendingAmount + (userTransactions[selectedTransectionIndex].total_amount - totalAmount)
+          diff = totalAmount - userTransactions[selectedTransectionIndex].total_amount
+          pendingAmount = pendingAmount + diff
+        }else if(totalAmount < userTransactions[selectedTransectionIndex].total_amount){
+          diff = userTransactions[selectedTransectionIndex].total_amount - totalAmount
+          if(diff < pendingAmount){
+            pendingAmount = pendingAmount - diff
+          }else{
+            pendingAmount =  diff - pendingAmount
+          }
+          if(totalAmount < userTransactions[selectedTransectionIndex].payed_amount){
+            pendingAmount = 0
+            payedAmount = totalAmount
+          }
         }
 
         const data = {
           userID: usersList[selectedUserIndex]._id,
           transectionID: userTransactions[selectedTransectionIndex]._id,
           transections: temp,
-          pending_amount: pendingAmount,
+          pending_amount: userTransactions[selectedTransectionIndex].payment === 'pending' ? pendingAmount : 0,
           total_amount: totalAmount,
-          payment: totalAmount !== userTransactions[selectedTransectionIndex].total_amount ? 'pending' : userTransactions[selectedTransectionIndex].payment,
-          payed_amount: userTransactions[selectedTransectionIndex].payed_amount > totalAmount ? totalAmount : userTransactions[selectedTransectionIndex].payed_amount
+          payed_amount: userTransactions[selectedTransectionIndex].payment === 'cash' ? totalAmount : payedAmount,
+          payment: pendingAmount === 0 ? 'cash' : userTransactions[selectedTransectionIndex].payment
         }
         axios.put(`${url_path}/edit-currency`, data).then(async(response) => {
           if(response.data.modifiedCount === 1){
