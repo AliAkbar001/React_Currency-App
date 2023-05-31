@@ -74,6 +74,7 @@ export default function HeaderLinks(props) {
           })
           setExpenses({name: '', amount: 0})
           onClose()
+          window.location.reload(false);
         }
       })
     }

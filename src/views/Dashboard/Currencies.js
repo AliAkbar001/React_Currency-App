@@ -140,7 +140,7 @@ export default function Currencies() {
                         date2 = date2.toString()
                         date2 = date2.replaceAll(',', '-')
                         if(date2 >= start && date2 <= end){
-                            transections.push({...res})
+                          transections.push({...res})
                         }
                     })
                 })
